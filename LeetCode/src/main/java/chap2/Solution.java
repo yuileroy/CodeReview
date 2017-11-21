@@ -1251,9 +1251,7 @@ public class Solution {
 		int[] right = findMax(root.right);
 		int result0 = root.val + left[1] + right[1]; // rob current root
 		int result1 = Math.max(left[0], left[1]) + Math.max(right[0], right[1]); // not
-		// rob
-		// current
-		// root
+		// rob current root
 		return new int[] { result0, result1 };
 	}
 
@@ -1269,7 +1267,6 @@ public class Solution {
 		res = citations.length;
 		return res;
 	}
-
 
 	public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
 		if (root == null || root == p || root == q) {
