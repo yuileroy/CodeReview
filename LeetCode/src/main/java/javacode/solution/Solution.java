@@ -64,4 +64,16 @@ class Solution {
         else
             return time + "";
     }
+
+    public int maxSubArray(int[] nums) {
+        int right = 0, cur = 0, max = Integer.MIN_VALUE;
+        while (right++ < nums.length) {
+            cur += nums[right];
+            max = Math.max(cur, max);
+            if (cur < 0) {
+                cur = 0;
+            }
+        }
+        return max;
+    }
 }
