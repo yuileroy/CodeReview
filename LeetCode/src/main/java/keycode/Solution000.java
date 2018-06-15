@@ -29,10 +29,36 @@ public class Solution000 {
 
     /**
      * 5. Longest Palindromic Substring
-     * 
-     * @category DP
      */
-    String longestPalindrome(String s) {
+    int max5 = 0, start5 = 0;
+
+    public String longestPalindrome(String s) {
+        if (s.length() < 2) {
+            return s;
+        }
+
+        for (int i = 0; i < s.length(); i++) {
+            calPalindrome(s, i, i);
+            calPalindrome(s, i, i + 1);
+        }
+        return s.substring(start5, start5 + max5);
+    }
+
+    private void calPalindrome(String s, int l, int h) {
+        while (l >= 0 && h < s.length() && s.charAt(l) == s.charAt(h)) {
+            l--;
+            h++;
+        }
+        if (h - l - 1 >= max5) {
+            max5 = h - l - 1;
+            start5 = l + 1;
+        }
+    }
+
+    /**
+     * @deprecated
+     */
+    String longestPalindrome_bad(String s) {
         if (s == null || s.length() == 0) {
             return "";
         }
