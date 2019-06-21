@@ -8,7 +8,10 @@ import java.util.Arrays;
 import org.junit.Test;
 
 public class LeetCode700 {
-    { System.out.println("Snowy"); }
+    {
+        System.out.println("Snowy");
+    }
+
     public boolean canTransform(String start, String end) {
         if (!start.replace("X", "").equals(end.replace("X", ""))) {
             return false;
@@ -70,8 +73,25 @@ public class LeetCode700 {
         }
     }
 
-    @SuppressWarnings("unused")
+    String decode(String s) {
+        int idx = s.length();
+        char[] res = new char[idx];
+        for (char c : s.toCharArray()) {
+            idx--;
+            char val = (char) ((c - idx) / 2);
+            res[idx] = val;
+        }
+        return String.valueOf(res);
+    }
+
     @Test
+    public void test3() {
+        char c = (char) 3;
+        System.out.println( 0 + (c += c + 0));
+    }
+
+    @SuppressWarnings("unused")
+    // @Test
     public void test() {
 
         int[][] grid = { { 0, 1, 2, 3, 4 }, { 24, 23, 22, 21, 5 }, { 12, 13, 14, 15, 16 }, { 11, 17, 18, 19, 20 },

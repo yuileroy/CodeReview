@@ -62,5 +62,6 @@ public class Solution400 {
     @Test
     public void test() {
         // System.out.println(maxNumber(new int[] { 3, 4, 6, 5 }, new int[] { 9, 1, 2, 5, 8, 3 }, 5));
+        System.out.println("a".substring(0, 0));
     }
 }

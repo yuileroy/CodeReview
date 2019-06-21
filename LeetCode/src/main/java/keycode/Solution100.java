@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 public class Solution100 {
     /**
@@ -90,5 +91,29 @@ public class Solution100 {
         }
         map.put(s, res);
         return res;
+    }
+
+    public int evalRPN(String[] tokens) {
+        if (tokens.length == 0) {
+            return 0;
+        }
+        Stack<Integer> stack = new Stack<>();
+        for (String s : tokens) {
+            if (!s.equals("+") && !s.equals("-") && !s.equals("*") && !s.equals("/"))
+                stack.push(Integer.parseInt(s));
+            else {
+                int b = stack.pop();
+                int a = stack.pop();
+                if (s.equals("+"))
+                    stack.push(a + b);
+                else if (s.equals("-"))
+                    stack.push(a - b);
+                else if (s.equals("*"))
+                    stack.push(a * b);
+                else
+                    stack.push(a / b);
+            }
+        }
+        return stack.peek();
     }
 }

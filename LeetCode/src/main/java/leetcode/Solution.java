@@ -3,8 +3,12 @@ package leetcode;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Stack;
 
@@ -211,9 +215,189 @@ public class Solution {
         return dp;
     }
 
+    public void duplicateZeros(int[] arr) {
+        int[] t = new int[arr.length];
+        int cur = 0;
+        for (int i = 0; i < arr.length && cur < arr.length; i++) {
+            int v = arr[i];
+            t[cur++] = v;
+            if (v == 0 && cur < arr.length) {
+                t[cur++] = v;
+            }
+        }
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = t[i];
+        }
+    }
+
+    public int largestValsFromLabels(int[] values, int[] labels, int num_wanted, int use_limit) {
+        Map<Integer, List<Integer>> map = new HashMap<>();
+        for (int i = 0; i < values.length; i++) {
+            int key = labels[i];
+            if (!map.containsKey(key)) {
+                map.put(key, new ArrayList<>());
+            }
+            map.get(key).add(values[i]);
+        }
+        PriorityQueue<Integer> pq = new PriorityQueue<>(Collections.reverseOrder());
+        for (List<Integer> li : map.values()) {
+            Collections.sort(li, Collections.reverseOrder());
+            int lim = 0;
+            while (lim < use_limit && lim < li.size()) {
+                pq.add(li.get(lim++));
+            }
+        }
+        int res = 0;
+        while (num_wanted-- > 0 && !pq.isEmpty()) {
+            res += pq.remove();
+        }
+        return res;
+    }
+
+    int[][] D = { { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 }, { 1, 1 }, { 1, -1 }, { -1, -1 }, { -1, 1 } };
+
+    public int shortestPathBinaryMatrix(int[][] grid) {
+        if (grid[0][0] == 1) {
+            return -1;
+        }
+        boolean[][] visited = new boolean[grid.length][grid[0].length];
+        ArrayDeque<int[]> que = new ArrayDeque<>();
+        que.add(new int[] { 0, 0 });
+        visited[0][0] = true;
+        int path = 1, size = que.size();
+        while (size > 0) {
+            path++;
+            while (size-- > 0) {
+                int[] cur = que.removeFirst();
+                for (int[] d : D) {
+                    int[] nb = new int[2];
+                    nb[0] = cur[0] + d[0];
+                    nb[1] = cur[1] + d[1];
+                    if (0 <= nb[0] && nb[0] < grid.length && 0 <= nb[1] && nb[1] < grid[0].length
+                            && !visited[nb[0]][nb[1]]) {
+                        if (grid[nb[0]][nb[1]] == 0) {
+                            que.add(nb);
+                            visited[nb[0]][nb[1]] = true;
+                            if (nb[0] == grid.length - 1 && nb[1] == grid[0].length - 1) {
+                                return path;
+                            }
+                        }
+                    }
+                }
+            }
+            size = que.size();
+        }
+        return -1;
+    }
+
+    public String shortestCommonSupersequence(String str1, String str2) {
+        int[][] L = new int[str1.length() + 1][str2.length() + 1];
+        shortest(str1, str2, L);
+        StringBuilder sb = new StringBuilder();
+        int i = 0, j = 0;
+        while (!(i == str1.length() && j == str2.length())) {
+            if (i == str1.length()) {
+                sb.append(str2.substring(j));
+                break;
+            }
+            if (j == str2.length()) {
+                sb.append(str1.substring(i));
+                break;
+            }
+            if (str1.charAt(i) == str2.charAt(j)) {
+                sb.append(str1.charAt(i));
+                i++;
+                j++;
+            } else if (L[i][j] == 1 + L[i + 1][j]) {
+                sb.append(str1.charAt(i++));
+            } else {
+                sb.append(str2.charAt(j++));
+            }
+        }
+        return sb.toString();
+    }
+
+    public void shortest(String str1, String str2, int[][] L) {
+        for (int i = str1.length(); i >= 0; i--) {
+            for (int j = str2.length(); j >= 0; j--) {
+                if (j == str2.length()) {
+                    L[i][j] = (i == str1.length() ? 0 : L[i + 1][j] + 1);
+                } else if (i == str1.length()) {
+                    L[i][j] = 1 + L[i][j + 1];
+                    continue;
+                } else {
+                    if (str1.charAt(i) == str2.charAt(j)) {
+                        L[i][j] = 1 + L[i + 1][j + 1];
+                    } else {
+                        L[i][j] = 1 + Math.min(L[i + 1][j], L[i][j + 1]);
+                    }
+                }
+            }
+        }
+    }
+
     @Test
     public void test() {
-        int[] A = new int[] { 3, 1, 4, 5 };
-        System.out.println(isIdealPermutation(A));
+        int[] A = new int[] { 0, 0, 0 };
+        duplicateZeros(A);
+    }
+}
+
+/**
+ * 30. Substring with Concatenation of All Words
+ */
+class Solution30 {
+    public List<Integer> findSubstring(String S, String[] L) {
+        List<Integer> res = new ArrayList<>();
+        if (S == null || L == null || S.length() == 0 || L.length == 0)
+            return res;
+        int wordLen = L[0].length();
+
+        Map<String, Integer> dict = new HashMap<>();
+        for (String word : L) {
+            dict.put(word, dict.getOrDefault(word, 0) + 1);
+        }
+
+        for (int i = 0; i < wordLen; i++) {
+            int count = 0;
+            int start = i;
+            Map<String, Integer> curdict = new HashMap<>();
+            // till the first letter of last word
+            for (int j = i; j <= S.length() - wordLen; j += wordLen) {
+                String curWord = S.substring(j, j + wordLen);
+                // check each word to tell if it existes in give dictionary
+                if (!dict.containsKey(curWord)) {
+                    curdict.clear();
+                    count = 0;
+                    start = j + wordLen;
+                    continue;
+                }
+                // form current dictionary
+                curdict.put(curWord, curdict.getOrDefault(curWord, 0) + 1);
+                if (curdict.get(curWord) <= dict.get(curWord)) {
+                    count++;
+                } else {
+                    while (curdict.get(curWord) > dict.get(curWord)) {
+                        String tmp = S.substring(start, start + wordLen);
+                        curdict.put(tmp, curdict.get(tmp) - 1);
+                        if (curdict.get(tmp) < dict.get(tmp)) {
+                            count--;
+                        }
+                        start += wordLen;
+                    }
+                }
+
+                // put into res and move index point to nextword
+                // and update current dictionary as well as count
+                if (count == L.length) {
+                    res.add(start);
+                    String tmp = S.substring(start, start + wordLen);
+                    curdict.put(tmp, curdict.get(tmp) - 1);
+                    start = start + wordLen;
+                    count--;
+                }
+            }
+        }
+        return res;
     }
 }
