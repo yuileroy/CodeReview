@@ -2,7 +2,9 @@ package keycode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import org.junit.Test;
@@ -20,6 +22,10 @@ public class Solution000 {
         int start = 0, res = 0;
         for (int i = 0; i < s.length(); i++) {
             start = Math.max(index[s.charAt(i)], start);
+            // !wrong
+            // if (A[c] != 0) {
+            // start = A[c];
+            // }
             res = Math.max(res, i - start + 1);
             // !-> (last index of char) + 1, so start=2 when i=3
             index[s.charAt(i)] = i + 1;
@@ -28,37 +34,71 @@ public class Solution000 {
     }
 
     /**
-     * 5. Longest Palindromic Substring
+     * 4. Median of Two Sorted Arrays
      */
-    int max5 = 0, start5 = 0;
-
-    public String longestPalindrome(String s) {
-        if (s.length() < 2) {
-            return s;
+    public double findMedianSortedArrays(int[] nums1, int[] nums2) {
+        int m = nums1.length;
+        int n = nums2.length;
+        int mid = (m + n) / 2;
+        if ((m + n) % 2 == 0) {
+            return 0.5 * (kth(nums1, m, nums2, n, mid) + kth(nums1, m, nums2, n, mid + 1));
         }
-
-        for (int i = 0; i < s.length(); i++) {
-            calPalindrome(s, i, i);
-            calPalindrome(s, i, i + 1);
-        }
-        return s.substring(start5, start5 + max5);
+        return (double) kth(nums1, m, nums2, n, mid + 1);
     }
 
-    private void calPalindrome(String s, int l, int h) {
-        while (l >= 0 && h < s.length() && s.charAt(l) == s.charAt(h)) {
-            l--;
-            h++;
+    int kth(int arr1[], int m, int arr2[], int n, int k) {
+        if (m > n)
+            return kth(arr2, n, arr1, m, k);
+        if (m == 0)
+            return arr2[k - 1];
+        if (k == 1)
+            return Math.min(arr1[0], arr2[0]);
+
+        // divide and conquer, n >= m >= 1, k >= 2
+        int i = Math.min(m, k / 2);
+        int j = Math.min(n, k / 2);
+        // Now we need to find only k-j th element
+        // since we have found out the lowest j
+        if (arr1[i - 1] > arr2[j - 1]) {
+            int temp[] = Arrays.copyOfRange(arr2, j, n);
+            return kth(arr1, m, temp, n - j, k - j);
         }
-        if (h - l - 1 >= max5) {
-            max5 = h - l - 1;
-            start5 = l + 1;
-        }
+
+        // Now we need to find only k-i th element
+        // since we have found out the lowest i
+        int temp[] = Arrays.copyOfRange(arr1, i, m);
+        return kth(temp, m - i, arr2, n, k - i);
     }
 
     /**
-     * @deprecated
+     * 5. Longest Palindromic Substring
      */
-    String longestPalindrome_bad(String s) {
+    int start = 0, max = 0;
+
+    public String longestPalindrome(String s) {
+        if (s == null || s.length() < 2) {
+            return s;
+        }
+        for (int i = 0; i < s.length() - 1; i++) {
+            palindrome(s, i, i);
+            palindrome(s, i, i + 1);
+        }
+        return s.substring(start, start + max);
+    }
+
+    void palindrome(String s, int i, int j) {
+        while (i >= 0 && j < s.length() && s.charAt(i) == s.charAt(j)) {
+            i--;
+            j++;
+        }
+        int len = j - i - 1;
+        if (len > max) {
+            max = len;
+            start = i + 1;
+        }
+    }
+
+    String longestPalindrome2(String s) {
         if (s == null || s.length() == 0) {
             return "";
         }
@@ -126,6 +166,45 @@ public class Solution000 {
     }
 
     /**
+     * 8. String to Integer (atoi)
+     * 
+     * @category long - int cast
+     */
+    public int myAtoi(String str) {
+        String s = str.trim();
+        if (s.isEmpty()) {
+            return 0;
+        }
+        int i = 0;
+        long val = 0;
+        boolean pos = true;
+        if (s.charAt(0) == '+') {
+            pos = true;
+            i++;
+        } else if (s.charAt(0) == '-') {
+            pos = false;
+            i++;
+        }
+        while (i < s.length() && Character.isDigit(s.charAt(i))) {
+            val = val * 10 + s.charAt(i) - '0';
+            i++; // ! forgot this line
+            if (val > (long) Integer.MAX_VALUE + 1) {
+                break; // Long.MAX_VALUE may also overflow
+            }
+        }
+        if (!pos) {
+            val = -val;
+        }
+        if (val > Integer.MAX_VALUE) {
+            val = Integer.MAX_VALUE;
+        }
+        if (val < Integer.MIN_VALUE) {
+            val = Integer.MIN_VALUE;
+        }
+        return (int) val; // ! cast
+    }
+
+    /**
      * 9. Palindrome Number
      * 
      * @category Overflow
@@ -182,31 +261,33 @@ public class Solution000 {
     /**
      * 15. 3Sum
      */
-    public List<List<Integer>> threeSum(int[] num) {
-        List<List<Integer>> res = new ArrayList<List<Integer>>();
-        Arrays.sort(num);
-        for (int i = 0; i < num.length - 2 && num[i] <= 0; i++) {
-            if (i > 0 && num[i] == num[i - 1]) { // skip same result
+    public List<List<Integer>> threeSum(int[] nums) {
+        List<List<Integer>> res = new ArrayList<>();
+        if (nums.length < 3) {
+            return res;
+        }
+        Arrays.sort(nums);
+        for (int i = 0; i < nums.length - 2; i++) {
+            if (nums[i] > 0)
+                break;
+            if (i > 0 && nums[i] == nums[i - 1])
                 continue;
-            }
-            int twosum = 0 - num[i];
-            int l = i + 1, r = num.length - 1;
+            int sum = 0 - nums[i];
+            int l = i + 1, r = nums.length - 1;
             while (l < r) {
-                int sum = num[l] + num[r];
-                if (sum < twosum) {
-                    l++;
-                } else if (sum > twosum) {
-                    r--;
-                } else {
-                    res.add(Arrays.asList(num[i], num[l], num[r]));
+                // wrong, [-4, 2, 2, 3]
+                // while (l + 1 < r && nums[l + 1] == nums[l]) l++;
+                if (nums[l] + nums[r] == sum) {
+                    res.add(Arrays.asList(nums[i], nums[l], nums[r]));
                     l++;
                     r--;
-                    while (l < r && num[l] == num[l - 1]) { // skip same result
+                    while (l < r && nums[l] == nums[l - 1]) {
                         l++;
                     }
-                    while (l < r && num[r] == num[r + 1]) { // skip same result
-                        r--;
-                    }
+                } else if (nums[l] + nums[r] < sum) {
+                    l++;
+                } else {
+                    r--;
                 }
             }
         }
@@ -220,10 +301,9 @@ public class Solution000 {
         if (nums == null || nums.length < 3) {
             return 0;
         }
-
         Arrays.sort(nums);
         int min = Integer.MAX_VALUE, res = 0;
-        for (int i = 0; i <= nums.length - 3; i++) {
+        for (int i = 0; i < nums.length - 2; i++) {
             int low = i + 1;
             int high = nums.length - 1;
             while (low < high) {
@@ -245,65 +325,11 @@ public class Solution000 {
     }
 
     /**
-     * 17. Letter Combinations of a Phone Number
-     * 
-     * @category DFS
-     */
-    private String[] dict = new String[] { "0", "1", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz" };
-
-    public List<String> letterCombinations(String digits) {
-        List<String> res = new ArrayList<>();
-        if (digits == null || digits.isEmpty()) {
-            return res;
-        }
-        helper17(digits, 0, new StringBuilder(), res);
-        return res;
-    }
-
-    private void helper17(String digits, int start, StringBuilder sb, List<String> res) {
-        if (start == digits.length()) {
-            res.add(sb.toString());
-            return;
-        }
-        char digit = digits.charAt(start);
-        for (char c : dict[digit - '0'].toCharArray()) { // digit - '0' , .toCharArray()
-            sb.append(c);
-            helper17(digits, start + 1, sb, res);
-            sb.deleteCharAt(sb.length() - 1);
-        }
-    }
-
-    /**
-     * 22. Generate Parentheses
-     * 
-     * @category DFS
-     */
-    public List<String> generateParenthesis(int n) {
-        List<String> result = new ArrayList<String>();
-        dfs22("", 0, 0, n, result);
-
-        return result;
-    }
-
-    void dfs22(String pre, int left, int right, int n, List<String> result) {
-        if (left == n && right == n) {
-            result.add(pre);
-            return;
-        }
-        if (left < n) {
-            dfs22(pre + "(", left + 1, right, n, result);
-        }
-        if (right < left) {
-            dfs22(pre + ")", left, right + 1, n, result);
-        }
-    }
-
-    /**
      * 18. 4Sum
      */
     public List<List<Integer>> fourSum(int[] num, int target) {
         Arrays.sort(num);
-        List<List<Integer>> result = new ArrayList<List<Integer>>();
+        List<List<Integer>> result = new ArrayList<>();
 
         for (int i = 0; i < num.length - 3; i++) {
             if (i > 0 && num[i] == num[i - 1]) {
@@ -328,8 +354,6 @@ public class Solution000 {
                         l--;
                         while (k < l && num[k] == num[k - 1])
                             k++;
-                        while (k < l && num[l] == num[l + 1])
-                            l--;
                     }
                 }
             }
@@ -343,47 +367,100 @@ public class Solution000 {
     // [3,2,4,3] , 3 -> [4,2,3,3]
     public int removeElement(int[] nums, int val) {
         int last = nums.length - 1;
-        int curr = 0;
-        while (curr <= last) {
-            if (nums[curr] == val) {
-                nums[curr] = nums[last];
+        int cur = 0;
+        while (cur <= last) {
+            if (nums[cur] == val) {
+                nums[cur] = nums[last];
                 last--;
             } else {
-                curr++;
+                cur++;
             }
         }
         return last + 1;
     }
 
+    /**
+     * 29. Divide Two Integers
+     */
     public int divide(int dividend, int divisor) {
         if (divisor == 0 || (dividend == Integer.MIN_VALUE && divisor == -1)) {
             return Integer.MAX_VALUE;
         }
-        long lDividend = Math.abs((long) dividend);
-        long lDivisor = Math.abs((long) divisor);
-        if (dividend == 0 || lDividend < lDivisor) {
+        boolean neg = (dividend < 0) ^ (divisor < 0);
+        long a = Math.abs((long) dividend);
+        long b = Math.abs((long) divisor);
+        if (dividend == 0 || a < b) {
             return 0;
         }
-        int q = 0;
-        boolean diffSign = false;
-        if (dividend < 0 && divisor > 0 || dividend > 0 && divisor < 0) {
-            diffSign = true;
-        }
-        while (lDividend >= lDivisor) {
-            long temp = lDivisor;
+        int res = 0;
+        while (a >= b) {
+            long tmp = b;
             long multiplier = 1;
-            while (lDividend >= temp << 1) {
-                temp <<= 1;
+            while ((tmp << 1) <= a) {
+                tmp <<= 1;
                 multiplier <<= 1;
             }
-            lDividend -= temp;
-            q += multiplier;
+            a -= tmp;
+            res += multiplier;
         }
-        if (diffSign) {
-            return q * (-1);
-        } else {
-            return q;
+        return neg ? -res : res;
+    }
+
+    /**
+     * 30. Substring with Concatenation of All Words
+     */
+    public List<Integer> findSubstring(String S, String[] L) {
+        List<Integer> res = new ArrayList<>();
+        if (S == null || L == null || S.length() == 0 || L.length == 0)
+            return res;
+        int wordLen = L[0].length();
+
+        Map<String, Integer> dict = new HashMap<>();
+        for (String word : L) {
+            dict.put(word, dict.getOrDefault(word, 0) + 1);
         }
+
+        for (int i = 0; i < wordLen; i++) {
+            int count = 0;
+            int start = i;
+            Map<String, Integer> curdict = new HashMap<>();
+            // till the first letter of last word
+            for (int j = i; j <= S.length() - wordLen; j += wordLen) {
+                String curWord = S.substring(j, j + wordLen);
+                // check each word to tell if it existes in give dictionary
+                if (!dict.containsKey(curWord)) {
+                    curdict.clear();
+                    count = 0;
+                    start = j + wordLen;
+                    continue;
+                }
+                // form current dictionary
+                curdict.put(curWord, curdict.getOrDefault(curWord, 0) + 1);
+                if (curdict.get(curWord) <= dict.get(curWord)) {
+                    count++;
+                } else {
+                    while (curdict.get(curWord) > dict.get(curWord)) {
+                        String tmp = S.substring(start, start + wordLen);
+                        curdict.put(tmp, curdict.get(tmp) - 1);
+                        if (curdict.get(tmp) < dict.get(tmp)) {
+                            count--;
+                        }
+                        start += wordLen;
+                    }
+                }
+
+                // put into res and move index point to nextword
+                // and update current dictionary as well as count
+                if (count == L.length) {
+                    res.add(start);
+                    String tmp = S.substring(start, start + wordLen);
+                    curdict.put(tmp, curdict.get(tmp) - 1);
+                    start = start + wordLen;
+                    count--;
+                }
+            }
+        }
+        return res;
     }
 
     /**
@@ -423,41 +500,161 @@ public class Solution000 {
         if (s == null || s.length() == 0) {
             return 0;
         }
-        int start = 0, max = 0;
-        Stack<Integer> stack = new Stack<Integer>();
+        int start = 0, res = 0;
+        Stack<Integer> stack = new Stack<>();
         for (int i = 0; i < s.length(); i++) {
             if (s.charAt(i) == '(') {
                 stack.push(i);
             } else {
-                if (stack.isEmpty()) { // meet ')' but stack is empty, only in this situation reset start
+                if (stack.isEmpty()) {
                     start = i + 1;
+                    continue;
+                }
+                stack.pop();
+                if (stack.isEmpty()) {
+                    res = Math.max(res, i - start + 1);
                 } else {
-                    // !stack.isEmpty(), s.charAt(i)=')'
-                    stack.pop();
-                    if (stack.isEmpty()) { // )()()(), start=1
-                        max = Math.max(i - start + 1, max);
-                    } else { // )(()()(), peek()=1
-                        max = Math.max(i - stack.peek(), max);
-                    }
+                    // "(()()"
+                    res = Math.max(res, i - stack.peek());
                 }
             }
         }
-        return max;
+        return res;
+    }
+
+    // V2
+    public int longestValidParentheses2(String s) {
+        int maxans = 0;
+        int dp[] = new int[s.length()];
+        for (int i = 1; i < s.length(); i++) {
+            if (s.charAt(i) == ')') {
+                if (s.charAt(i - 1) == '(') {
+                    dp[i] = (i >= 2 ? dp[i - 2] : 0) + 2;
+                } else if (i - dp[i - 1] > 0 && s.charAt(i - dp[i - 1] - 1) == '(') {
+                    // "))" -> ( + dp[i-1] + )
+                    dp[i] = dp[i - 1] + 2;
+                    if (i - dp[i - 1] >= 2) {
+                        // ()( + dp[i-1] + )
+                        dp[i] += dp[i - dp[i - 1] - 2];
+                    }
+                }
+                maxans = Math.max(maxans, dp[i]);
+            }
+        }
+        return maxans;
+    }
+
+    /**
+     * 33. Search in Rotated Sorted Array
+     * 
+     * @category Binary Search
+     */
+    public int search(int[] nums, int target) {
+        if (nums == null || nums.length == 0) {
+            return -1;
+        }
+        int start = 0, end = nums.length - 1;
+        while (start < end) {
+            int mid = start + (end - start) / 2;
+            if (target == nums[mid]) {
+                return mid;
+            }
+            if (nums[start] <= nums[mid]) { // left sorted
+                if (nums[start] <= target && target < nums[mid]) {
+                    end = mid;
+                } else {
+                    start = mid + 1;
+                }
+            } else { // right sorted
+                if (nums[mid] < target && target <= nums[end]) {
+                    start = mid + 1;
+                } else {
+                    end = mid;
+                }
+            }
+        }
+        if (target == nums[start]) {
+            return start;
+        }
+        return -1;
+    }
+
+    /**
+     * 34. Find First and Last Position of Element in Sorted Array
+     * 
+     * @category Binary Search
+     */
+    public int[] searchRange(int[] nums, int target) {
+        int[] res = { -1, -1 };
+        if (nums == null || nums.length == 0) {
+            return res;
+        }
+        // find first match
+        int start = 0, end = nums.length - 1;
+        while (start < end) {
+            int mid = start + (end - start) / 2;
+            if (nums[mid] < target) {
+                start = mid + 1;
+            } else {
+                end = mid;
+            }
+        }
+        if (nums[start] != target) {
+            return res;
+        }
+        res[0] = start;
+        // find last match
+        end = nums.length - 1;
+        while (start < end) {
+            int mid = end - (end - start) / 2;
+            if (nums[mid] > target) {
+                end = mid - 1;
+            } else {
+                start = mid;
+            }
+        }
+        res[1] = start;
+        return res;
+    }
+
+    /**
+     * 35. Search Insert Position
+     */
+    public int searchInsert(int[] nums, int target) {
+        if (nums.length == 0) {
+            return 0;
+        }
+        int l = 0, r = nums.length - 1;
+        while (l < r) {
+            int mid = l + (r - l) / 2;
+            if (nums[mid] == target) {
+                return mid;
+            } else if (nums[mid] < target) {
+                l = mid + 1;
+            } else {
+                r = mid;
+            }
+        }
+        // ! if (l == nums.length && nums[l - 1] < target)
+        if (l == nums.length - 1 && nums[l] < target) {
+            return l + 1;
+        }
+        return l;
     }
 
     /**
      * 40. Combination Sum II
      */
     public List<List<Integer>> combinationSum2(int[] candidates, int target) {
-        List<List<Integer>> res = new ArrayList<List<Integer>>();
+        List<List<Integer>> res = new ArrayList<>();
         Arrays.sort(candidates);
-        helper(candidates, target, 0, new ArrayList<Integer>(), res);
+        helper(candidates, target, 0, new ArrayList<>(), res);
         return res;
     }
 
     private void helper(int[] c, int target, int start, List<Integer> item, List<List<Integer>> res) {
         if (target == 0) {
-            res.add(new ArrayList<Integer>(item));
+            res.add(new ArrayList<>(item));
             return;
         }
         for (int i = start; i < c.length; i++) {
@@ -475,24 +672,109 @@ public class Solution000 {
     }
 
     /**
+     * 42. Trapping Rain Water
+     */
+    public int trap(int[] height) {
+        if (height.length < 3) {
+            return 0;
+        }
+        Stack<Integer> stack = new Stack<>();
+        int res = 0;
+        for (int i = 0; i < height.length; i++) {
+            while (!stack.isEmpty() && height[i] > height[stack.peek()]) {
+                int t = stack.pop();
+                if (stack.isEmpty()) {
+                    break;
+                }
+                int dis = i - stack.peek() - 1;
+                int h = Math.min(height[i], height[stack.peek()]);
+                res += dis * (h - height[t]);
+            }
+            stack.push(i);
+        }
+        return res;
+    }
+
+    // V2
+    public int trap2(int[] height) {
+        if (height.length < 3) {
+            return 0;
+        }
+        int max = 0;
+        for (int i = 0; i < height.length; i++) {
+            if (height[i] > height[max]) {
+                max = i;
+            }
+        }
+        int water = 0, peak = 0;
+        for (int i = 0; i < max; i++) {
+            if (height[i] > peak) {
+                peak = height[i];
+            } else {
+                water += peak - height[i];
+            }
+        }
+        peak = 0;
+        for (int i = height.length - 1; i > max; i--) {
+            if (height[i] > peak) {
+                peak = height[i];
+            } else {
+                water += peak - height[i];
+            }
+        }
+        return water;
+    }
+
+    /**
+     * 43. Multiply Strings
+     */
+    String multiply(String num1, String num2) {
+        num1 = new StringBuilder(num1).reverse().toString();
+        num2 = new StringBuilder(num2).reverse().toString();
+        int[] d = new int[num1.length() + num2.length()];
+        for (int i = 0; i < num1.length(); i++) {
+            int a = num1.charAt(i) - '0';
+            for (int j = 0; j < num2.length(); j++) {
+                int b = num2.charAt(j) - '0';
+                d[i + j] += a * b;
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < d.length; i++) {
+            int digit = d[i] % 10;
+            int carry = d[i] / 10;
+            sb.insert(0, digit);
+            if (i + 1 < d.length) {
+                d[i + 1] += carry;
+            }
+        }
+        // trim starting zeros
+        // 2 * 3 = 06, 56 * 0 = 000
+        while (sb.length() > 0 && sb.charAt(0) == '0') {
+            sb.deleteCharAt(0);
+        }
+        return sb.length() == 0 ? "0" : sb.toString();
+    }
+
+    /**
      * 45. Jump Game II
      */
     int jump(int A[]) {
         if (A.length == 1) {
             return 0;
         }
-        int left = 0, right = 0, step = 0;
+        int start = 0, right = 0, step = 0;
         // step++: calculate max(right) each time. all positions within can be reached
-        while (left <= right) {
+        while (start <= right) {
             step++;
-            int last = right;
-            for (int i = left; i <= last; i++) {
+            int end = right;
+            for (int i = start; i <= end; i++) {
                 right = Math.max(right, A[i] + i);
                 if (right >= A.length - 1) {
                     return step;
                 }
             }
-            left = last + 1;
+            start = end + 1;
         }
         return -1;
     }
@@ -526,21 +808,21 @@ public class Solution000 {
     }
 
     public List<List<Integer>> permute2(int[] num) {
-        List<List<Integer>> res = new ArrayList<List<Integer>>();
+        List<List<Integer>> res = new ArrayList<>();
         if (num == null || num.length == 0) {
             return res;
         }
-        List<Integer> first = new ArrayList<Integer>();
+        List<Integer> first = new ArrayList<>();
         first.add(num[0]);
         res.add(first);
         // newRes: add one number to every position of every list {{1}} -> {{1, 2}, {2, 1}}
         // -> {{3, 1, 2}, {1, 3, 2}, {1, 2, 3}, ...}
         for (int i = 1; i < num.length; i++) {
-            List<List<Integer>> newRes = new ArrayList<List<Integer>>();
+            List<List<Integer>> newRes = new ArrayList<>();
             for (int j = 0; j < res.size(); j++) {
                 List<Integer> cur = res.get(j);
                 for (int k = 0; k < cur.size() + 1; k++) {
-                    ArrayList<Integer> item = new ArrayList<Integer>(cur);
+                    List<Integer> item = new ArrayList<>(cur);
                     item.add(k, num[i]);
                     newRes.add(item);
                 }
@@ -553,26 +835,26 @@ public class Solution000 {
     /**
      * 47. Permutations II
      */
-
     public List<List<Integer>> permuteUnique(int[] nums) {
-        List<List<Integer>> res = new ArrayList<List<Integer>>();
+        List<List<Integer>> res = new ArrayList<>();
         if (nums == null || nums.length == 0) {
             return res;
         }
         Arrays.sort(nums);
-        helper47(nums, new boolean[nums.length], new ArrayList<Integer>(), res);
+        helper47(nums, new boolean[nums.length], new ArrayList<>(), res);
         return res;
     }
 
     private void helper47(int[] nums, boolean[] used, List<Integer> item, List<List<Integer>> res) {
         if (item.size() == nums.length) {
-            res.add(new ArrayList<Integer>(item));
+            res.add(new ArrayList<>(item));
             return;
         }
         for (int i = 0; i < nums.length; i++) {
-            // 1, 2, 2, 3 -> skip second 2
-            if (i > 0 && nums[i - 1] == nums[i] && !used[i - 1]) // !-> 40. if(i > start && c[i] == c[i-1]) {
+            // 1, 2, 2, 3 -> !used[i - 1] to keep the order
+            if (i > 0 && nums[i] == nums[i - 1] && !used[i - 1]) {
                 continue;
+            }
             if (!used[i]) {
                 used[i] = true;
                 item.add(nums[i]);
@@ -581,23 +863,6 @@ public class Solution000 {
                 used[i] = false;
             }
         }
-    }
-
-    /**
-     * 53. Maximum Subarray
-     */
-    public int maxSubArray(int[] nums) {
-        int right = 0, cur = 0, max = nums[0];
-        while (right < nums.length) {
-            cur += nums[right];
-            max = Math.max(cur, max);
-            // no need to track left
-            if (cur < 0) {
-                cur = 0;
-            }
-            right++;
-        }
-        return max;
     }
 
     /**
@@ -695,8 +960,11 @@ public class Solution000 {
     @SuppressWarnings("unused")
     @Test
     public void test0() {
-        int[] A = { 1, 2, 3, 4 };
+        int[] A = {};
+        int[] B = { 2 };
         // List<List<Integer>> res = permute(A);
-        combine(6, 2);
+        // combine(6, 2);
+        System.out.println(kth(A, A.length, B, B.length, 1));
+
     }
 }

@@ -1,5 +1,8 @@
 package javacode.solution;
 
+import java.util.LinkedList;
+import java.util.List;
+
 class Solution {
     int diff = 0x3f3f3f3f;
     String result = "";
@@ -75,5 +78,23 @@ class Solution {
             }
         }
         return max;
+    }
+
+    // Decodes a single string to a list of strings.
+    public List<String> decode(String s) {
+        List<String> res = new LinkedList<String>();
+        int start = 0;
+        while (start < s.length()) {
+            if (s.charAt(start) == '#') {
+                res.add(null);
+                start += 2;
+                continue;
+            }
+            int idx = s.indexOf('#', start);
+            int size = Integer.parseInt(s.substring(start, idx));
+            res.add(s.substring(idx + 1, idx + size + 1));
+            start = idx + size + 1;
+        }
+        return res;
     }
 }

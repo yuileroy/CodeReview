@@ -27,6 +27,29 @@ import org.junit.Test;
 
 public class JavaCode {
 
+    public List<String> wordBreak(String s, List<String> wordDict) {
+        List<String> res = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        Set<String> wordSet = new HashSet<>(wordDict);
+        dfs140(s, wordSet, sb, res);
+
+        return res;
+    }
+
+    void dfs140(String s, Set<String> wordSet, StringBuilder sb, List<String> res) {
+        if (s.equals("")) {
+            res.add(sb.deleteCharAt(sb.length() - 1).toString());
+        }
+        for (int i = 1; i < s.length(); i++) {
+            String cur = s.substring(0, i);
+            if (wordSet.contains(cur)) {
+                sb.append(cur + " ");
+                dfs140(s.substring(i + 1), wordSet, sb, res);
+                sb.delete(sb.length() - cur.length() - 1, sb.length());
+            }
+        }
+    }
+
     void mergeArray(int[] a, int[] b) {
         int n = a.length;
         int cur = 2 * n - 1;
@@ -2081,9 +2104,75 @@ public class JavaCode {
         return res;
     }
 
+    class Point {
+        int x;
+        int y;
+
+        Point() {
+            x = 0;
+            y = 0;
+        }
+
+        Point(int a, int b) {
+            x = a;
+            y = b;
+        }
+    }
+
+    public int maxPoints(Point[] points) {
+        if (points == null || points.length == 0) {
+            return 0;
+        }
+        if (points.length == 1) {
+            return 1;
+        }
+
+        int max = 1;
+        for (int i = 0; i < points.length; i++) {
+            HashMap<Double, Integer> hm = new HashMap<>();
+            int same = 0;
+            int localmax = 1;
+            for (int j = i + 1; j < points.length; j++) {
+                if (points[i].x == points[j].x && points[i].y == points[j].y) {
+                    same++;
+                    continue;
+                }
+
+                double slope;
+                if (points[i].y - points[j].y == 0) {
+                    slope = 0;
+                } else if (points[i].x - points[j].x == 0) {
+                    slope = Double.POSITIVE_INFINITY;
+                } else {
+                    slope = ((double) (points[i].y - points[j].y)) / (points[i].x - points[j].x);
+                }
+                if (hm.containsKey(slope)) {
+                    hm.put(slope, hm.get(slope) + 1);
+                } else {
+                    hm.put(slope, 2); // two points form a line
+                }
+            }
+
+            for (Integer value : hm.values()) {
+                localmax = Math.max(localmax, value);
+            }
+
+            localmax += same;
+            max = Math.max(max, localmax);
+        }
+        return max;
+    }
+
     @Test
     public void test() {
-        // System.out.println(false && false || true);
+        float a = 0 / -2;
+        float b = 0 / 2;
+        Point[] p = new Point[3];
+        p[0] = new Point(0, 0);
+        p[1] = new Point(94911151,94911150);
+        p[2] = new Point(94911152,94911151);
+        System.out.println(maxPoints(p));
+        // System.out.println(false && false || true); [[0,0],[94911151,94911150],[94911152,94911151]]
         // System.out.println(true || false && false);
         // System.out.println(minimumDeleteSum("delete", "leet"));
     }
@@ -2146,6 +2235,5 @@ public class JavaCode {
             System.out.println();
         }
     }
-
 
 }

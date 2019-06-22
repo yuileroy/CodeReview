@@ -56,6 +56,52 @@ public class SolutionTrick {
         return num;
     }
 
+    public String intToRoman(int num) {
+        String M[] = { "", "M", "MM", "MMM" };
+        String C[] = { "", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM" };
+        String X[] = { "", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC" };
+        String I[] = { "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX" };
+        return M[num / 1000] + C[(num % 1000) / 100] + X[(num % 100) / 10] + I[num % 10];
+    }
+
+    // 273. Integer to English Words
+    class Solution273 {
+        private final String[] lessThan20 = { "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight",
+                "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen",
+                "Eighteen", "Nineteen" };
+        private final String[] tens = { "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty",
+                "Ninety" };
+        private final String[] thousands = { "", "Thousand", "Million", "Billion" };
+
+        public String numberToWords(int num) {
+            if (num == 0) {
+                return "Zero";
+            }
+            String result = "";
+            int i = 0;
+            while (num > 0) {
+                if (num % 1000 != 0) {
+                    result = helper(num % 1000) + thousands[i] + " " + result;
+                }
+                num /= 1000;
+                i++;
+            }
+            return result.trim();
+        }
+
+        private String helper(int num) {
+            if (num == 0) {
+                return "";
+            } else if (num < 20) {
+                return lessThan20[num] + " ";
+            } else if (num < 100) {
+                return tens[num / 10] + " " + helper(num % 10);
+            } else {
+                return lessThan20[num / 100] + " Hundred " + helper(num % 100);
+            }
+        }
+    }
+
     /**
      * 240. Search a 2D Matrix II
      */
@@ -99,6 +145,7 @@ public class SolutionTrick {
     public List<String> addOperators(String num, int target) {
         List<String> list = new ArrayList<String>();
         fn282(list, num, target, new StringBuilder(), 0, 0, 0);
+        "".toLowerCase();
         return list;
     }
 
@@ -135,13 +182,5 @@ public class SolutionTrick {
                 path.setLength(sb);
             }
         }
-    }
-
-    public String intToRoman(int num) {
-        String M[] = { "", "M", "MM", "MMM" };
-        String C[] = { "", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM" };
-        String X[] = { "", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC" };
-        String I[] = { "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX" };
-        return M[num / 1000] + C[(num % 1000) / 100] + X[(num % 100) / 10] + I[num % 10];
     }
 }
