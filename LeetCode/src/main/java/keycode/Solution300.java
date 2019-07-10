@@ -122,42 +122,75 @@ public class Solution300 {
      * 315. Count of Smaller Numbers After Self
      */
     public List<Integer> countSmaller(int[] nums) {
-
-        List<Integer> list = new ArrayList<Integer>();
-        List<Integer> res = new ArrayList<Integer>();
-        for (int i = nums.length - 1; i >= 0; i--) {
-            res.add(insert(list, nums[i]));
+        List<Integer> res = new ArrayList<>();
+        if (nums.length == 0) {
+            return res;
+        }
+        Node root = new Node(nums[nums.length - 1]);
+        res.add(0);
+        for (int i = nums.length - 2; i >= 0; i--) {
+            int value = nums[i];
+            res.add(insertTree(root, value));
         }
         Collections.reverse(res);
         return res;
     }
 
-    // binary search and insert
-    private int insert(List<Integer> list, int num) {
-        if (list.isEmpty()) {
-            list.add(num);
-            return 0;
-        } else {
-            int left = 0, right = list.size() - 1;
-            while (left + 1 < right) {
-                int mid = left + (right - left) / 2;
-                if (list.get(mid) < num) {
-                    left = mid;
-                } else {
-                    right = mid;
-                }
-            }
-            // ! compare both
-            int idx = left;
-            if (list.get(left) < num) {
-                idx = left + 1;
-            }
-            if (list.get(right) < num) {
-                idx = right + 1;
-            }
-            list.add(idx, num);
-            return idx;
+    class Node {
+        int val, leftCnt, cnt;
+        Node left, right;
+
+        Node(int val) {
+            this.val = val;
+            cnt = 1;
         }
+    }
+
+    int insertTree(Node root, int value) {
+        if (root == null) {
+            root = new Node(value);
+            return 0;
+        }
+        if (root.val == value) {
+            root.cnt++;
+            return root.leftCnt;
+        } else if (root.val > value) {
+            root.leftCnt++; // ! don't forget to add
+            if (root.left == null) { // don't forget to link
+                root.left = new Node(value);
+                return 0;
+            }
+            root = root.left;
+            return insertTree(root, value);
+        } else {
+            int sum = root.cnt + root.leftCnt;
+            if (root.right == null) {
+                root.right = new Node(value);
+                return sum;
+            }
+            root = root.right;
+            return sum + insertTree(root, value);
+        }
+    }
+
+    // V2
+    int insertIdx(List<Integer> sort, int value) {
+        if (sort.size() == 0) {
+            sort.add(value);
+            return 0;
+        }
+        int l = 0, r = sort.size() - 1;
+        while (l < r) {
+            int m = l + (r - l) / 2;
+            if (sort.get(m) >= value) {
+                r = m;
+            } else {
+                l = m + 1;
+            }
+        }
+        int idx = sort.get(l) < value ? l + 1 : l;
+        sort.add(idx, value);
+        return idx;
     }
 
     /**
@@ -249,21 +282,6 @@ public class Solution300 {
      * 378. Kth Smallest Element in a Sorted Matrix
      */
     public int kthSmallest(int[][] matrix, int k) {
-        int n = matrix.length;
-        int start = matrix[0][0], end = matrix[n - 1][n - 1];
-        while (start + 1 < end) {
-            int mid = start + (end - start) / 2;
-            int tmp = smallEqual(matrix, mid);
-            if (tmp < k) { // can't use tmp <= k
-                start = mid;
-            } else {
-                end = mid;
-            }
-        }
-        return smallEqual(matrix, start) < k ? end : start;
-    }
-
-    public int kthSmallest0(int[][] matrix, int k) {
         int n = matrix.length;
         int start = matrix[0][0], end = matrix[n - 1][n - 1];
         while (start < end) {
@@ -363,22 +381,22 @@ public class Solution300 {
                     i++;
                 }
                 counts.push(num);
-            } else if (s.charAt(i) == '[') {
+                continue;
+            }
+            if (s.charAt(i) == '[') {
                 strs.push(res);
                 res = "";
-                i++;
             } else if (s.charAt(i) == ']') {
-                StringBuilder str = new StringBuilder(strs.pop());
+                StringBuilder sb = new StringBuilder(strs.pop());
                 int count = counts.pop();
                 for (int j = 0; j < count; j++) {
-                    str.append(res);
+                    sb.append(res);
                 }
-                res = str.toString();
-                i++;
+                res = sb.toString();
             } else {
                 res += s.charAt(i);
-                i++;
             }
+            i++;
         }
         return res;
     }
@@ -504,6 +522,7 @@ public class Solution300 {
 
     @Test
     public void test() {
+        countSmaller(new int[] { 5, 2, 6, 1 });
         System.out.println(maxNumber(new int[] { 3, 4, 6, 5 }, new int[] { 9, 1, 2, 5, 8, 3 }, 5));
         Solution399 s = new Solution399();
         s.calcEquation(new String[][] { { "a", "b" }, { "c", "d" }, { "b", "d" } }, new double[] { 2.0, 3.0, 5.0 },
