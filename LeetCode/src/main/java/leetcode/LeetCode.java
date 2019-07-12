@@ -276,17 +276,141 @@ public class LeetCode {
         }
     }
 
+    public double[] sampleStats(int[] count) {
+        double[] res = new double[5];
+        res[0] = 256;
+        long sum = 0, cnt = 0, maxCnt = 0;
+        for (int i = 0; i < count.length; i++) {
+            if (count[i] == 0) {
+                continue;
+            }
+            sum += i * count[i];
+            cnt += count[i];
+            res[0] = Math.min(res[0], i);
+            res[1] = Math.max(res[1], i);
+            if (count[i] > maxCnt) {
+                res[4] = i;
+                maxCnt = count[i];
+            }
+        }
+        res[2] = (0.0 + sum) / cnt;
+        long m1 = 0, m2 = 0;
+        long mid1 = (cnt + 1) / 2;
+        long mid2 = cnt % 2 == 0 ? mid1 + 1 : mid1;
+        cnt = 0;
+        for (int i = 0; i < count.length; i++) {
+            cnt += count[i];
+            if (cnt >= mid1) {
+                m1 = i;
+                break;
+            }
+        }
+        cnt = 0;
+        for (int i = 0; i < count.length; i++) {
+            cnt += count[i];
+            if (cnt >= mid2) {
+                m2 = i;
+                break;
+            }
+        }
+        res[3] = (m1 + m2) / 2.0;
+        return res;
+    }
+
+    class Solution {
+        Map<Integer, Integer> map = new HashMap<>();
+
+        public int findInMountainArray(int target, MountainArray mountainArr) {
+            int len = mountainArr.length();
+            int l = 0, r = len - 1, top = 0;
+
+            while (l < r) {
+                int mid = l + (r - l) / 2;
+                int val = getVal(mid, mountainArr);
+                //if (val == target) {
+                ///    System.out.println("mid: " + mid);
+                //    return mid;
+                //}
+                if (mid - 1 >= 0 && getVal(mid - 1, mountainArr) < val && mid + 1 < len
+                        && getVal(mid + 1, mountainArr) < val) {
+                    top = mid;
+                    break;
+                } else if (mid - 1 >= 0 && getVal(mid - 1, mountainArr) < val) {
+                    l = mid + 1;
+                } else {
+                    r = mid;
+                }
+            }
+            System.out.println("top: " + top);
+            l = 0;
+            r = top;
+            while (l < r) {
+                int mid = l + (r - l) / 2;
+                int val = getVal(mid, mountainArr);
+                if (val == target) {
+                    return mid;
+                } else if (val > target) {
+                    r = mid;
+                } else {
+                    l = mid + 1;
+                }
+            }
+            if (getVal(l, mountainArr) == target) {
+                return l;
+            }
+            l = top;
+            r = len - 1;
+            while (l < r) {
+                int mid = l + (r - l) / 2;
+                int val = getVal(mid, mountainArr);
+                if (val == target) {
+                    return mid;
+                } else if (val < target) {
+                    r = mid;
+                } else {
+                    l = mid + 1;
+                }
+            }
+            if (getVal(l, mountainArr) == target) {
+                return l;
+            }
+            return -1;
+        }
+
+        int getVal(int i, MountainArray mountainArr) {
+            if (map.containsKey(i)) {
+                return map.get(i);
+            }
+            int v = mountainArr.get(i);
+            map.put(i, v);
+            return v;
+        }
+    }
+
+    class MountainArray {
+        int[] A = {1,5,2};
+        public int get(int index) {
+            return A[index];
+        }
+
+        public int length() {
+            return A.length;
+        }
+    }
+
     @Test
     public void test() {
-        String[] cmd = new String[7];
-        cmd[0] = "push 4";
-        cmd[1] = "pop";
-        cmd[2] = "push 3";
-        cmd[3] = "push 5";
-        cmd[4] = "push 2";
-        cmd[5] = "inc 3 1";
-        cmd[6] = "pop";
-        superStack(cmd);
+        Solution s = new Solution();
+        System.out.println(s.findInMountainArray(2, new MountainArray()));
+//        String[] cmd = new String[7];
+//        cmd[0] = "push 4";
+//        cmd[1] = "pop";
+//        cmd[2] = "push 3";
+//        cmd[3] = "push 5";
+//        cmd[4] = "push 2";
+//        cmd[5] = "inc 3 1";
+//        cmd[6] = "pop";
+//        superStack(cmd);
 
     }
 }

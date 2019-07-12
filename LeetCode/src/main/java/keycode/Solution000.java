@@ -549,7 +549,7 @@ public class Solution000 {
      * 
      * @category Binary Search
      */
-    public int search(int[] nums, int target) {
+    public int search33(int[] nums, int target) {
         if (nums == null || nums.length == 0) {
             return -1;
         }
@@ -892,43 +892,6 @@ public class Solution000 {
         return sb.toString();
     }
 
-    public int climbStairs(int n) {
-        int a = 1, b = 1;
-        while (n-- > 1) {
-            int tmp = b;
-            b = a + b;
-            a = tmp;
-        }
-        return b;
-    }
-
-    /**
-     * 63. Unique Paths II
-     */
-    public int uniquePathsWithObstacles(int[][] obstacleGrid) {
-
-        int m = obstacleGrid.length, n = obstacleGrid[0].length;
-        if (m == 0 || n == 0) {
-            return 0;
-        }
-        // handle i=0, j=0
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                if (obstacleGrid[i][j] == 1)
-                    obstacleGrid[i][j] = 0;
-                else if (i == 0 && j == 0)
-                    obstacleGrid[i][j] = 1;
-                else if (i == 0)
-                    obstacleGrid[i][j] = obstacleGrid[i][j - 1];
-                else if (j == 0)
-                    obstacleGrid[i][j] = obstacleGrid[i - 1][j];
-                else
-                    obstacleGrid[i][j] = obstacleGrid[i - 1][j] + obstacleGrid[i][j - 1];
-            }
-        }
-        return obstacleGrid[m - 1][n - 1];
-    }
-
     /**
      * 77. Combinations
      */
@@ -952,13 +915,156 @@ public class Solution000 {
         }
     }
 
+    /**
+     * 79. Word Search
+     */
+    public boolean exist(char[][] board, String word) {
+        if (board == null || board.length == 0) {
+            return false;
+        }
+        if (word.length() == 0) {
+            return true;
+        }
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[0].length; j++) {
+                if (find(board, word, i, j, 0)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean find(char[][] board, String word, int i, int j, int k) {
+        if (k == word.length()) {
+            return true;
+        }
+        if (i < 0 || i >= board.length || j < 0 || j >= board[0].length || board[i][j] != word.charAt(k)) {
+            return false;
+        }
+        // no need to use visited[]
+        board[i][j] = '#';
+        boolean res = find(board, word, i, j - 1, k + 1) || find(board, word, i, j + 1, k + 1)
+                || find(board, word, i - 1, j, k + 1) || find(board, word, i + 1, j, k + 1);
+        board[i][j] = word.charAt(k);
+        return res;
+    }
+
+    /**
+     * 81. Search in Rotated Sorted Array II
+     */
+    public boolean search(int[] A, int target) {
+        int left = 0;
+        int right = A.length - 1;
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (A[mid] == target) {
+                return true;
+            }
+
+            // left sorted
+            if (A[left] < A[mid] || A[right] < A[mid]) {
+                if (A[left] <= target && target < A[mid]) {
+                    right = mid;
+                } else {
+                    left = mid + 1;
+                }
+                // right sorted
+            } else if (A[left] > A[mid] || A[right] > A[mid]) {
+                if (A[mid] < target && target <= A[right]) {
+                    left = mid + 1;
+                } else {
+                    right = mid;
+                }
+                // left == mid == right
+            } else {
+                left++;
+                right--;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 84. Largest Rectangle in Histogram
+     */
+    public int largestRectangleArea(int[] heights) {
+
+        Stack<Integer> stack = new Stack<>();
+        int maxArea = 0, i = 0;
+        while (i < heights.length) {
+            if (stack.isEmpty() || heights[i] >= heights[stack.peek()]) {
+                stack.push(i++);
+            } else {
+                // i -> right bound, stack.peek() -> left bound, both lower than h[cur]
+                int cur = stack.pop();
+                int left = stack.isEmpty() ? -1 : stack.peek();
+                maxArea = Math.max(maxArea, heights[cur] * (i - left - 1));
+            }
+        }
+        while (!stack.isEmpty()) {
+            int cur = stack.pop();
+            int left = stack.isEmpty() ? -1 : stack.peek();
+            maxArea = Math.max(maxArea, heights[cur] * (i - left - 1));
+        }
+        return maxArea;
+    }
+
+    // V2
+    public int largestRectangleArea2(int[] heights) {
+        // add zero to both side
+        int[] h = new int[heights.length + 2];
+        for (int i = 0; i < heights.length; i++) {
+            h[i + 1] = heights[i];
+        }
+        int maxArea = 0, i = 1;
+        Stack<Integer> idx = new Stack<>();
+        idx.add(0);
+        while (i < h.length) {
+            if (h[idx.peek()] <= h[i]) {
+                idx.push(i++);
+            } else {
+                // i -> right bound, stack.peek() -> left bound, both lower than h[t]
+                int t = idx.pop();
+                maxArea = Math.max(maxArea, h[t] * (i - idx.peek() - 1));
+            }
+        }
+        return maxArea;
+    }
+
+    /**
+     * 91. Decode Ways
+     */
+    public int numDecodings(String s) {
+        if (s == null || s.isEmpty() || s.charAt(0) == '0') {
+            return 0;
+        }
+        int a = 1, b = 1, cur = 1;
+        for (int i = 1; i < s.length(); i++) {
+            if (s.charAt(i) == '0') {
+                if (s.charAt(i - 1) != '1' && s.charAt(i - 1) != '2') {
+                    return 0;
+                }
+                cur = a;
+            } else {
+                cur = b;
+                if (s.charAt(i - 1) != '0' && Integer.parseInt(s.substring(i - 1, i + 1)) <= 26) {
+                    cur += a;
+                }
+            }
+            a = b;
+            b = cur;
+        }
+        return b;
+    }
+
     @Test
     public void test() {
-        getPermutation(4, 23);
+        largestRectangleArea(new int[] { 2, 1, 5, 6, 2, 3 });
     }
 
     @SuppressWarnings("unused")
-    @Test
+    // @Test
     public void test0() {
         int[] A = {};
         int[] B = { 2 };
