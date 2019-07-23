@@ -244,9 +244,8 @@ public class Solution200 {
     /**
      * 220. Contains Duplicate III
      * 
-     * Given an array of integers, find out whether there are two distinct indices i and j in the array such that the
-     * absolute difference between nums[i] and nums[j] is at most t and the absolute difference between i and j is at
-     * most k
+     * Given an array of integers, find out whether there are two distinct indices i and j in the array such that the absolute difference between
+     * nums[i] and nums[j] is at most t and the absolute difference between i and j is at most k
      */
     public boolean containsNearbyAlmostDuplicate(int[] nums, int k, int t) {
         int len = nums.length;
@@ -303,8 +302,7 @@ public class Solution200 {
     /**
      * 221. Maximal Square
      * 
-     * Given a 2D binary matrix filled with 0's and 1's, find the largest square containing only 1's and return its
-     * area.
+     * Given a 2D binary matrix filled with 0's and 1's, find the largest square containing only 1's and return its area.
      */
     public int maximalSquare(char[][] matrix) {
         if (matrix == null || matrix.length == 0 || matrix[0].length == 0) {
@@ -352,6 +350,7 @@ public class Solution200 {
         if (root == null) {
             return 0;
         }
+        // ** optional speed up START
         TreeNode left = root, right = root;
         int height = 0;
         while (right != null) {
@@ -362,6 +361,7 @@ public class Solution200 {
         if (left == null) {
             return (1 << height) - 1;
         }
+        // ** optional speed up END
         // one side will be full tree
         return 1 + countNodes(root.left) + countNodes(root.right);
     }
@@ -370,27 +370,65 @@ public class Solution200 {
      * 224. Basic Calculator
      */
     public int calculate(String s) {
-        int sign = 1, res = 0;
+        int sign = 1, cur = 0;
         Stack<Integer> stack = new Stack<>();
         for (int i = 0; i < s.length(); i++) {
             if (Character.isDigit(s.charAt(i))) {
-                int sum = s.charAt(i) - '0';
-                while (i + 1 < s.length() && Character.isDigit(s.charAt(i + 1))) {
-                    sum = sum * 10 + s.charAt(i + 1) - '0';
-                    i++;
+                int val = 0;
+                while (i < s.length() && Character.isDigit(s.charAt(i))) {
+                    val = val * 10 + s.charAt(i++) - '0';
                 }
-                res += sum * sign;
+                i--;
+                cur += val * sign;
             } else if (s.charAt(i) == '+') {
                 sign = 1;
             } else if (s.charAt(i) == '-') {
                 sign = -1;
             } else if (s.charAt(i) == '(') {
-                stack.push(res);
+                stack.push(cur);
                 stack.push(sign);
-                res = 0;
+                cur = 0;
                 sign = 1;
             } else if (s.charAt(i) == ')') {
-                res = res * stack.pop() + stack.pop();
+                cur = cur * stack.pop() + stack.pop();
+            }
+        }
+        return cur;
+    }
+
+    /**
+     * 227. Basic Calculator II
+     * 
+     * The expression string contains only non-negative integers, +, -, *, / operators and empty spaces
+     */
+    public int calculate227(String s) {
+        char mark = '+';
+        int res = 0, pre = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == ' ') {
+                continue;
+            }
+            if (Character.isDigit(c)) {
+                int val = 0;
+                while (i < s.length() && Character.isDigit(s.charAt(i))) {
+                    val = val * 10 + s.charAt(i++) - '0';
+                }
+                i--;
+                if (mark == '+') {
+                    pre = val;
+                } else if (mark == '-') {
+                    pre = -val;
+                } else if (mark == '*') {
+                    res -= pre;
+                    pre *= val;
+                } else if (mark == '/') {
+                    res -= pre;
+                    pre /= val;
+                }
+                res += pre;
+            } else {
+                mark = c;
             }
         }
         return res;
@@ -399,7 +437,7 @@ public class Solution200 {
     /**
      * 230. Kth Smallest Element in a BST
      */
-    public int kthSmallest(TreeNode root, int k) {
+    public int kthSmallestV2(TreeNode root, int k) {
         int res = 0;
         Deque<TreeNode> s = new ArrayDeque<>();
         TreeNode cur = root;
@@ -418,22 +456,22 @@ public class Solution200 {
         return res;
     }
 
-    public int kthSmallest2(TreeNode root, int k) {
-        int L = count(root.left);
-        if (L == k - 1) {
-            return root.val;
-        } else if (L < k - 1) {
-            return kthSmallest2(root.right, k - L - 1);
-        } else {
-            return kthSmallest2(root.left, k);
-        }
+    int res230 = 0;
+
+    public int kthSmallest(TreeNode root, int k) {
+        kth(root, k);
+        return res230;
     }
 
-    private int count(TreeNode root) {
-        if (root == null) {
-            return 0;
+    public void kth(TreeNode root, int k) {
+        if (root == null || k <= 0) {
+            return;
         }
-        return count(root.left) + count(root.right) + 1;
+        kth(root.left, k);
+        if (--k == 0) {
+            res230 = root.val;
+        }
+        kth(root.right, k);
     }
 
     public List<Integer> preorderTraversal(TreeNode root) {
@@ -472,7 +510,11 @@ public class Solution200 {
 
     @Test
     public void test() {
-        int[] A = { 3, 2, 1, 5, 6, 4 };
-        System.out.println(findKthLargest(A, 2));
+        System.out.println("a");
+        // int[] A = { 3, 2, 1, 5, 6, 4 };
+        // System.out.println(findKthLargest(A, 2));
+        TreeNode root = new TreeNode(3);
+        root.left = new TreeNode(2);
+        System.out.println(kthSmallest(root, 1));
     }
 }
