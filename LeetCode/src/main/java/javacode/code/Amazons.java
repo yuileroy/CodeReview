@@ -5,8 +5,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -211,8 +213,41 @@ public class Amazons {
         return map.get(minKey);
     }
 
+    int resMap = 0;
+
+    int getMaxLen(Map<String, List<String>> map) {
+        for (String key : map.keySet()) {
+            Set<String> visited = new HashSet<>();
+            visited.add(key);
+            dfsMap(key, 0, map, visited);
+        }
+        return resMap;
+    }
+
+    void dfsMap(String key, int cnt, Map<String, List<String>> map, Set<String> visited) {
+        cnt++;
+        resMap = Math.max(resMap, cnt);
+        System.out.println(visited);
+        if (!map.containsKey(key)) {
+            return;
+        }
+        for (String s : map.get(key)) {
+            if (!visited.contains(s)) {
+                visited.add(s);
+                dfsMap(s, cnt, map, visited);
+                visited.remove(s);
+            }
+        }
+    }
+
     @Test
     public void test() {
+        Map<String, List<String>> map = new HashMap<>();
+        map.put("A", Arrays.asList("B", "D"));
+        map.put("B", Arrays.asList("C"));
+        map.put("C", Arrays.asList("A"));
+        map.put("D", Arrays.asList("E"));
+        System.out.println(getMaxLen(map));
         List<List<Integer>> forwardRouteList = new ArrayList<>();
         List<List<Integer>> returnRouteList = new ArrayList<>();
         List<Integer> li = new ArrayList<>();
@@ -226,7 +261,6 @@ public class Amazons {
         returnRouteList.add(li);
         returnRouteList.add(li);
         System.out.println(optimalUtilization(10, forwardRouteList, returnRouteList));
-
     }
 
 }
