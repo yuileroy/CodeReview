@@ -437,16 +437,35 @@ public class Solution200 {
     /**
      * 230. Kth Smallest Element in a BST
      */
+
+    int cnt = 0, res = 0;
+
+    public int kthSmallest(TreeNode root, int k) {
+        kth(root, k);
+        return res;
+    }
+
+    public void kth(TreeNode root, int k) {
+        if (root == null || cnt == k) {
+            return;
+        }
+        kth(root.left, k);
+        if (++cnt == k) { // --k WORNG
+            res = root.val;
+        }
+        kth(root.right, k);
+    }
+
     public int kthSmallestV2(TreeNode root, int k) {
         int res = 0;
-        Deque<TreeNode> s = new ArrayDeque<>();
+        Deque<TreeNode> que = new ArrayDeque<>();
         TreeNode cur = root;
-        while (cur != null || !s.isEmpty()) {
+        while (cur != null || !que.isEmpty()) {
             while (cur != null) {
-                s.push(cur);
+                que.push(cur);
                 cur = cur.left;
             }
-            cur = s.pop();
+            cur = que.pop();
             if (--k == 0) {
                 res = cur.val;
                 break;
@@ -454,58 +473,6 @@ public class Solution200 {
             cur = cur.right;
         }
         return res;
-    }
-
-    int res230 = 0;
-
-    public int kthSmallest(TreeNode root, int k) {
-        kth(root, k);
-        return res230;
-    }
-
-    public void kth(TreeNode root, int k) {
-        if (root == null || k <= 0) {
-            return;
-        }
-        kth(root.left, k);
-        if (--k == 0) {
-            res230 = root.val;
-        }
-        kth(root.right, k);
-    }
-
-    public List<Integer> preorderTraversal(TreeNode root) {
-        List<Integer> res = new ArrayList<Integer>();
-        if (root == null) {
-            return res;
-        }
-        Stack<TreeNode> stack = new Stack<TreeNode>();
-        while (root != null || !stack.isEmpty()) {
-            if (root != null) {
-                stack.push(root);
-                res.add(root.val);
-                root = root.left;
-            } else {
-                root = stack.pop();
-                root = root.right;
-            }
-        }
-        return res;
-    }
-
-    public List<Integer> preorderTraversal2(TreeNode root) {
-        List<Integer> res = new ArrayList<Integer>();
-        preorderTraversal2(root, res);
-        return res;
-    }
-
-    private void preorderTraversal2(TreeNode root, List<Integer> res) {
-        if (root == null) {
-            return;
-        }
-        res.add(root.val);
-        preorderTraversal2(root.left, res);
-        preorderTraversal2(root.right, res);
     }
 
     @Test
