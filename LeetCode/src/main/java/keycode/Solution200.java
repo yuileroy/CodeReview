@@ -244,8 +244,9 @@ public class Solution200 {
     /**
      * 220. Contains Duplicate III
      * 
-     * Given an array of integers, find out whether there are two distinct indices i and j in the array such that the absolute difference between
-     * nums[i] and nums[j] is at most t and the absolute difference between i and j is at most k
+     * Given an array of integers, find out whether there are two distinct indices i and j in the array such that the
+     * absolute difference between nums[i] and nums[j] is at most t and the absolute difference between i and j is at
+     * most k
      */
     public boolean containsNearbyAlmostDuplicate(int[] nums, int k, int t) {
         int len = nums.length;
@@ -302,7 +303,8 @@ public class Solution200 {
     /**
      * 221. Maximal Square
      * 
-     * Given a 2D binary matrix filled with 0's and 1's, find the largest square containing only 1's and return its area.
+     * Given a 2D binary matrix filled with 0's and 1's, find the largest square containing only 1's and return its
+     * area.
      */
     public int maximalSquare(char[][] matrix) {
         if (matrix == null || matrix.length == 0 || matrix[0].length == 0) {
@@ -450,7 +452,7 @@ public class Solution200 {
             return;
         }
         kth(root.left, k);
-        if (++cnt == k) { // --k WORNG
+        if (++cnt == k) { // --k WRONG
             res = root.val;
         }
         kth(root.right, k);
@@ -475,6 +477,124 @@ public class Solution200 {
         return res;
     }
 
+    /**
+     * 236. Lowest Common Ancestor of a Binary Tree
+     */
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if (root == null) {
+            return null;
+        }
+        if (root == p || root == q) {
+            return root;
+        }
+        TreeNode leftN = lowestCommonAncestor(root.left, p, q);
+        TreeNode rightN = lowestCommonAncestor(root.right, p, q);
+        if (leftN != null && rightN != null) {
+            return root;
+        } else if (leftN == null) {
+            return rightN;
+        } else {
+            return leftN;
+        }
+    }
+
+    /**
+     * 239. Sliding Window Maximum
+     */
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        if (nums.length == 0 || k == 1) {
+            return nums;
+        }
+        int[] res = new int[nums.length - k + 1];
+        ArrayDeque<Integer> que = new ArrayDeque<>();
+        for (int i = 0; i < k - 1; i++) {
+            addNext(que, nums[i]);
+        }
+
+        for (int i = 0; i <= nums.length - k; i++) {
+            addNext(que, nums[i + k - 1]);
+            res[i] = que.peekFirst();
+            if (nums[i] == res[i]) {
+                que.removeFirst();
+            }
+        }
+        return res;
+    }
+
+    private void addNext(ArrayDeque<Integer> que, int val) {
+        while (!que.isEmpty() && que.peekLast() < val) {
+            que.removeLast();
+        }
+        que.addLast(val);
+    }
+
+    /**
+     * 240. Search a 2D Matrix II
+     */
+    // [1, 4, 7, 11, 15]
+    // [2, 5, 8, 12, 19]
+    // [3, 6, 9, 16, 22]
+    public boolean searchMatrix(int[][] matrix, int target) {
+        if (matrix.length == 0 || matrix[0].length == 0) {
+            return false;
+        }
+
+        int i = 0, j = matrix[0].length - 1;
+        while (i < matrix.length && j >= 0) {
+            int x = matrix[i][j];
+            if (target == x)
+                return true;
+            else if (target < x)
+                j--;
+            else
+                i++;
+        }
+        return false;
+    }
+
+    /**
+     * 241. Different Ways to Add Parentheses
+     * 
+     */
+    // Input: "2*3-4*5"
+    // Output: [-34, -14, -10, -10, 10]
+    // Explanation:
+    // (2*(3-(4*5))) = -34
+    // ((2*3)-(4*5)) = -14
+    // ((2*(3-4))*5) = -10
+    // (2*((3-4)*5)) = -10
+    // (((2*3)-4)*5) = 10
+    public List<Integer> diffWaysToCompute(String input) {
+        List<Integer> res = new ArrayList<>();
+        if (input == null || input.length() == 0) {
+            return res;
+        }
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if (c != '+' && c != '-' && c != '*') {
+                continue;
+            }
+            List<Integer> left = diffWaysToCompute(input.substring(0, i));
+            List<Integer> right = diffWaysToCompute(input.substring(i + 1));
+            for (int m : left) {
+                for (int n : right) {
+                    if (c == '+') {
+                        res.add(m + n);
+                    } else if (c == '-') {
+                        res.add(m - n);
+                    } else if (c == '*') {
+                        res.add(m * n);
+                    }
+                }
+            }
+        }
+
+        if (res.isEmpty()) {
+            res.add(Integer.parseInt(input));
+        }
+        return res;
+    }
+
     @Test
     public void test() {
         System.out.println("a");
@@ -483,5 +603,9 @@ public class Solution200 {
         TreeNode root = new TreeNode(3);
         root.left = new TreeNode(2);
         System.out.println(kthSmallest(root, 1));
+        PriorityQueue<Integer> pq = new PriorityQueue<>();
+        pq.add(5);
+        pq.add(3);
+        pq.remove(5);
     }
 }
