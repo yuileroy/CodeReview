@@ -344,6 +344,9 @@ public class Solution300 {
 
     /**
      * 321. Create Maximum Number
+     * 
+     * Create the maximum number of length k <= m + n from digits of the two. The relative order of the digits from the
+     * same array must be preserved. Return an array of the k digits.
      */
     public int[] maxNumber(int[] nums1, int[] nums2, int k) {
         int[] ans = new int[k];
@@ -379,15 +382,15 @@ public class Solution300 {
     private int[] largestDigits(int[] nums, int k) {
         int[] res = new int[k];
         int top = 0;
-        int remove = nums.length - k;
+        int cnt = nums.length - k;
         for (int i = 0; i < nums.length; i++) {
-            while (remove > 0 && top > 0 && res[top - 1] < nums[i]) {
+            while (cnt > 0 && top > 0 && res[top - 1] < nums[i]) {
                 top--;
-                remove--;
+                cnt--;
             }
             // !-> res is still full, discard nums[i]
             if (top == k) {
-                remove--;
+                cnt--;
             }
             if (top < k) {
                 res[top++] = nums[i];
