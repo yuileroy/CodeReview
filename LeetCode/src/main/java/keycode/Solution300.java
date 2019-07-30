@@ -17,6 +17,90 @@ import org.junit.Test;
 import keycode.util.ListNode;
 
 public class Solution300 {
+
+    /**
+     * 300. Longest Increasing Subsequence
+     */
+    public int lengthOfLIS(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return 0;
+        }
+        // {2, 6, 8, 3, 9} -> {2, 3, 8} -> {2, 3, 8, 9}
+        List<Integer> li = new ArrayList<>();
+        for (int e : nums) {
+            if (li.isEmpty() || e > li.get(li.size() - 1)) {
+                li.add(e);
+                continue;
+            }
+            int start = 0, end = li.size() - 1;
+            while (start < end) {
+                int mid = start + (end - start) / 2;
+                if (li.get(mid) >= e) {
+                    end = mid;
+                } else {
+                    start = mid + 1;
+                }
+            }
+            li.set(start, e);
+        }
+        return li.size();
+    }
+
+    /**
+     * 307. Range Sum Query - Mutable
+     */
+    class NumArray {
+        int[] tree;
+        int n;
+
+        public NumArray(int[] nums) {
+            if (nums.length > 0) {
+                n = nums.length;
+                tree = new int[n * 2];
+                buildTree(nums);
+            }
+        }
+
+        // k -> (2k, 2k + 1) -> (even, odd)
+        // [_, 10, 3, 7, 1, 2, 3, 4]
+        // [_, 15, 10, 5, 9, 1, 2, 3, 4, 5]
+        private void buildTree(int[] nums) {
+            for (int i = n, j = 0; i < 2 * n; i++, j++)
+                tree[i] = nums[j];
+            for (int i = n - 1; i > 0; i--)
+                tree[i] = tree[i * 2] + tree[i * 2 + 1];
+        }
+
+        public void update(int pos, int val) {
+            pos += n;
+            int diff = val - tree[pos];
+            tree[pos] = val;
+            while (pos > 0) {
+                pos /= 2;
+                tree[pos] += diff;
+            }
+        }
+
+        public int sumRange(int l, int r) {
+            l += n;
+            r += n;
+            int sum = 0;
+            while (l <= r) {
+                if ((l % 2) == 1) {
+                    sum += tree[l];
+                    l++;
+                }
+                if ((r % 2) == 0) {
+                    sum += tree[r];
+                    r--;
+                }
+                l /= 2;
+                r /= 2;
+            }
+            return sum;
+        }
+    }
+
     /**
      * 309. Best Time to Buy and Sell Stock with Cooldown
      */
@@ -46,6 +130,10 @@ public class Solution300 {
 
     /**
      * 310. Minimum Height Trees
+     * 
+     * Among all possible rooted trees, those with minimum height are called minimum height trees
+     * 
+     * The graph contains n nodes which are labeled from 0 to n - 1
      */
     public List<Integer> findMinHeightTrees(int n, int[][] edges) {
         List<Integer> result = new ArrayList<>();
@@ -76,7 +164,7 @@ public class Solution300 {
             List<Integer> newLeaves = new ArrayList<>();
             for (int leaf : leaves) {
                 int neighbor = adjList.get(leaf).iterator().next();
-                adjList.get(neighbor).remove(leaf);
+                adjList.get(neighbor).remove(leaf); // or use extra degree[i]--
                 if (adjList.get(neighbor).size() == 1) {
                     newLeaves.add(neighbor);
                 }
@@ -84,6 +172,36 @@ public class Solution300 {
             leaves = newLeaves;
         }
         return leaves;
+    }
+
+    /**
+     * 312. Burst Balloons
+     */
+
+    public int maxCoins(int[] iNums) {
+        int n = iNums.length;
+        int[] nums = new int[n + 2];
+        for (int i = 0; i < n; i++) {
+            nums[i + 1] = iNums[i];
+        }
+        nums[0] = nums[n + 1] = 1;
+        int[][] dp = new int[n + 2][n + 2];
+        return fn(1, n, nums, dp);
+    }
+
+    public int fn(int i, int j, int[] nums, int[][] dp) {
+        if (i > j) {
+            return 0;
+        }
+        if (dp[i][j] > 0) {
+            return dp[i][j];
+        }
+        // max { last balloon value = nums[i - 1] * nums[x] * nums[j + 1] }
+        for (int x = i; x <= j; x++) {
+            dp[i][j] = Math.max(dp[i][j],
+                    fn(i, x - 1, nums, dp) + nums[i - 1] * nums[x] * nums[j + 1] + fn(x + 1, j, nums, dp));
+        }
+        return dp[i][j];
     }
 
     /**
