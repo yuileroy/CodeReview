@@ -244,9 +244,8 @@ public class Solution200 {
     /**
      * 220. Contains Duplicate III
      * 
-     * Given an array of integers, find out whether there are two distinct indices i and j in the array such that the
-     * absolute difference between nums[i] and nums[j] is at most t and the absolute difference between i and j is at
-     * most k
+     * Given an array of integers, find out whether there are two distinct indices i and j in the array such that the absolute difference between
+     * nums[i] and nums[j] is at most t and the absolute difference between i and j is at most k
      */
     public boolean containsNearbyAlmostDuplicate(int[] nums, int k, int t) {
         int len = nums.length;
@@ -303,8 +302,7 @@ public class Solution200 {
     /**
      * 221. Maximal Square
      * 
-     * Given a 2D binary matrix filled with 0's and 1's, find the largest square containing only 1's and return its
-     * area.
+     * Given a 2D binary matrix filled with 0's and 1's, find the largest square containing only 1's and return its area.
      */
     public int maximalSquare(char[][] matrix) {
         if (matrix == null || matrix.length == 0 || matrix[0].length == 0) {
@@ -593,6 +591,111 @@ public class Solution200 {
             res.add(Integer.parseInt(input));
         }
         return res;
+    }
+
+    /**
+     * 264. Ugly Number II
+     */
+    public int nthUglyNumber(int n) {
+
+        int[] res = new int[n];
+        res[0] = 1;
+
+        int idx2 = 0, idx3 = 0, idx5 = 0;
+        int cur = 1;
+        while (cur < n) {
+            int min = minOf(res[idx2] * 2, res[idx3] * 3, res[idx5] * 5);
+            if (min == res[idx2] * 2) {
+                idx2++;
+            }
+            if (min == res[idx3] * 3) {
+                idx3++;
+            }
+            if (min == res[idx5] * 5) {
+                idx5++;
+            }
+            res[cur] = min;
+            cur++;
+        }
+        return res[n - 1];
+    }
+
+    private int minOf(int a, int b, int c) {
+        int d = a < b ? a : b;
+        return d < c ? d : c;
+    }
+
+    /**
+     * 275. H-Index II
+     */
+
+    public int hIndex(int[] citations) {
+        if (citations.length == 0) {
+            return 0;
+        }
+        for (int k = citations.length; k > 0; k--) {
+            if (k <= citations[citations.length - k]) {
+                return k;
+            }
+        }
+        return 0;
+    }
+
+    // V2, BST find last valid
+    public int hIndexV2(int[] citations) {
+        if (citations.length == 0) {
+            return 0;
+        }
+        int l = 1, r = citations.length; // k's range, not citations's
+        while (l < r) {
+            int k = l + (r - l) / 2;
+            if (k <= citations[citations.length - k]) {
+                l = k + 1;
+            } else {
+                r = k;
+            }
+        }
+        return l <= citations[citations.length - l] ? l : l - 1;
+    }
+
+    public List<String> addOperators(String num, int target) {
+        List<String> list = new ArrayList<String>();
+        fn(list, num, target, new StringBuilder(), 0, 0, 0);
+        return list;
+    }
+
+    // dp, dfs, add a number to result each time
+    private void fn(List<String> list, String num, int target, StringBuilder sb, int start, long sum, long lastNum) {
+        if (start == num.length() && sum == target) {
+            list.add(sb.toString());
+            return;
+        }
+        if (start >= num.length()) {
+            return;
+        }
+        for (int i = start; i < num.length(); i++) {
+            if (num.charAt(start) == '0' && i > start) {
+                break; // "0x"
+            }
+            long curNum = Long.parseLong(num.substring(start, i + 1));
+            int len = sb.length();
+            if (start == 0) {
+                sb.append(curNum);
+                fn(list, num, target, sb, i + 1, curNum, curNum);
+                sb.setLength(len);
+            } else {
+                sb.append("+").append(curNum);
+                fn(list, num, target, sb, i + 1, sum + curNum, curNum);
+                sb.setLength(len);
+                sb.append("-").append(curNum);
+                fn(list, num, target, sb, i + 1, sum - curNum, -curNum);
+                sb.setLength(len);
+                // sum - lastNum + lastNum * curNum
+                sb.append("*").append(curNum);
+                fn(list, num, target, sb, i + 1, sum - lastNum + lastNum * curNum, lastNum * curNum);
+                sb.setLength(len);
+            }
+        }
     }
 
     @Test

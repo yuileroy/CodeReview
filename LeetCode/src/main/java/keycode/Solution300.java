@@ -1,6 +1,7 @@
 package keycode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -198,8 +199,7 @@ public class Solution300 {
         }
         // max { last balloon value = nums[i - 1] * nums[x] * nums[j + 1] }
         for (int x = i; x <= j; x++) {
-            dp[i][j] = Math.max(dp[i][j],
-                    fn(i, x - 1, nums, dp) + nums[i - 1] * nums[x] * nums[j + 1] + fn(x + 1, j, nums, dp));
+            dp[i][j] = Math.max(dp[i][j], fn(i, x - 1, nums, dp) + nums[i - 1] * nums[x] * nums[j + 1] + fn(x + 1, j, nums, dp));
         }
         return dp[i][j];
     }
@@ -345,8 +345,8 @@ public class Solution300 {
     /**
      * 321. Create Maximum Number
      * 
-     * Create the maximum number of length k <= m + n from digits of the two. The relative order of the digits from the
-     * same array must be preserved. Return an array of the k digits.
+     * Create the maximum number of length k <= m + n from digits of the two. The relative order of the digits from the same array must be preserved.
+     * Return an array of the k digits.
      */
     public int[] maxNumber(int[] nums1, int[] nums2, int k) {
         int[] ans = new int[k];
@@ -397,6 +397,74 @@ public class Solution300 {
             }
         }
         return res;
+    }
+
+    /**
+     * 336. Palindrome Pairs
+     */
+    class Solution336 {
+        class TrieNode {
+            public int index = -1;
+            public TrieNode[] next = new TrieNode[26];
+            public List<Integer> list = new ArrayList<>();
+        }
+
+        public List<List<Integer>> palindromePairs(String[] words) {
+            List<List<Integer>> res = new ArrayList<>();
+            TrieNode root = new TrieNode();
+            for (int i = 0; i < words.length; i++) {
+                buildTrie(root, words[i], i);
+            }
+            for (int i = 0; i < words.length; i++) {
+                search(root, words[i], i, res);
+            }
+            return res;
+        }
+
+        public void buildTrie(TrieNode root, String s, int index) {
+            for (int i = s.length() - 1; i >= 0; i--) {
+                char c = s.charAt(i);
+                if (root.next[c - 'a'] == null) {
+                    root.next[c - 'a'] = new TrieNode();
+                }
+                if (isPalindrome(s, 0, i)) {
+                    root.list.add(index);
+                }
+                root = root.next[c - 'a'];
+            }
+            root.index = index;
+            root.list.add(index); // prefix("") is palindorme
+        }
+
+        // [a, ab, ba]
+        public void search(TrieNode root, String s, int i, List<List<Integer>> res) {
+            for (int j = 0; j < s.length(); j++) {
+                // first to handle empty string e.g. ["a",""], we will miss [0,1]
+                if (root.index != -1 && root.index != i && isPalindrome(s, j, s.length() - 1)) {
+                    // [ab, a] added here, i's prefix matches index's string
+                    res.add(Arrays.asList(i, root.index));
+                }
+                root = root.next[s.charAt(j) - 'a'];
+                if (root == null) {
+                    return;
+                }
+            }
+            // [a, ba] [ab, ba] [ba, ab] added here, i's string matches e's suffix
+            for (int e : root.list) {
+                if (i != e) {
+                    res.add(Arrays.asList(i, e));
+                }
+            }
+        }
+
+        public boolean isPalindrome(String s, int i, int j) {
+            while (i < j) {
+                if (s.charAt(i++) != s.charAt(j--)) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
     /**

@@ -522,7 +522,7 @@ public class Solution000 {
         return res;
     }
 
-    // V2
+    // V2 tricky
     public int longestValidParentheses2(String s) {
         int maxans = 0;
         int dp[] = new int[s.length()];
@@ -542,6 +542,38 @@ public class Solution000 {
             }
         }
         return maxans;
+    }
+
+    // V3 good
+    public int longestValidParenthesesV3(String s) {
+        int left = 0, right = 0, maxlength = 0;
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == '(') {
+                left++;
+            } else {
+                right++;
+            }
+            if (left == right) {
+                maxlength = Math.max(maxlength, 2 * right);
+            } else if (right > left) {
+                left = right = 0;
+            }
+        }
+        // "(()"
+        left = right = 0;
+        for (int i = s.length() - 1; i >= 0; i--) {
+            if (s.charAt(i) == '(') {
+                left++;
+            } else {
+                right++;
+            }
+            if (left == right) {
+                maxlength = Math.max(maxlength, 2 * left);
+            } else if (left > right) {
+                left = right = 0;
+            }
+        }
+        return maxlength;
     }
 
     /**
@@ -944,8 +976,8 @@ public class Solution000 {
         }
         // no need to use visited[]
         board[i][j] = '#';
-        boolean res = find(board, word, i, j - 1, k + 1) || find(board, word, i, j + 1, k + 1)
-                || find(board, word, i - 1, j, k + 1) || find(board, word, i + 1, j, k + 1);
+        boolean res = find(board, word, i, j - 1, k + 1) || find(board, word, i, j + 1, k + 1) || find(board, word, i - 1, j, k + 1)
+                || find(board, word, i + 1, j, k + 1);
         board[i][j] = word.charAt(k);
         return res;
     }
