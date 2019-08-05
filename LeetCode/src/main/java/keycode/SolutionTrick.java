@@ -1,10 +1,14 @@
 package keycode;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 public class SolutionTrick {
 
@@ -180,6 +184,71 @@ public class SolutionTrick {
                 path.append("*").append(curNum);
                 fn282(list, num, target, path, i + 1, sum - lastNum + lastNum * curNum, lastNum * curNum);
                 path.setLength(sb);
+            }
+        }
+    }
+
+    class Solution {
+        public boolean waterJugProblem(int x, int y, int z) {
+            if (x + y < z)
+                return false;
+            if (z == x || x == y || x == x + y)
+                return true;
+
+            if (x > y) {
+                int tmp = x;
+                x = y;
+                y = tmp;
+            }
+
+            Queue<State> states = new ArrayDeque<>();
+            Set<State> visited = new HashSet<>();
+
+            // initial state
+            State init = new State(0, 0);
+            states.offer(init);
+            visited.add(init);
+
+            while (!states.isEmpty()) {
+                State curr = states.poll();
+                if (curr.a + curr.b == z)
+                    return true;
+
+                Queue<State> queue = new ArrayDeque<>();
+                queue.offer(new State(x, curr.b)); // fill jug 1
+                queue.offer(new State(0, curr.b)); // empty jug1
+                queue.offer(new State(curr.a, y)); // fill jug 2
+                queue.offer(new State(curr.a, 0)); // empty jug2
+                // pour all water from jug2 to jug1
+                queue.offer(new State(Math.min(curr.a + curr.b, x), curr.a + curr.b < x ? 0 : curr.b - (x - curr.a)));
+                // pour all water from jug1 to jug2
+                queue.offer(new State(curr.a + curr.b < y ? 0 : curr.a - (y - curr.b), Math.min(curr.a + curr.b, y)));
+
+                for (State tmp : queue) {
+                    if (visited.contains(tmp))
+                        continue;
+                    states.offer(tmp);
+                    visited.add(tmp);
+                }
+            }
+            return false;
+        }
+
+        class State {
+            public int a, b;
+
+            public State(int a, int b) {
+                this.a = a;
+                this.b = b;
+            }
+
+            public int hashCode() {
+                return 31 * a + b;
+            }
+
+            public boolean equals(Object o) {
+                State other = (State) o;
+                return this.a == other.a && this.b == other.b;
             }
         }
     }

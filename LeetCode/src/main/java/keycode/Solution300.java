@@ -3,19 +3,23 @@ package keycode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeMap;
 
 import org.junit.Test;
 
 import keycode.util.ListNode;
+import keycode.util.NestedInteger;
 
 public class Solution300 {
 
@@ -199,7 +203,8 @@ public class Solution300 {
         }
         // max { last balloon value = nums[i - 1] * nums[x] * nums[j + 1] }
         for (int x = i; x <= j; x++) {
-            dp[i][j] = Math.max(dp[i][j], fn(i, x - 1, nums, dp) + nums[i - 1] * nums[x] * nums[j + 1] + fn(x + 1, j, nums, dp));
+            dp[i][j] = Math.max(dp[i][j],
+                    fn(i, x - 1, nums, dp) + nums[i - 1] * nums[x] * nums[j + 1] + fn(x + 1, j, nums, dp));
         }
         return dp[i][j];
     }
@@ -345,31 +350,32 @@ public class Solution300 {
     /**
      * 321. Create Maximum Number
      * 
-     * Create the maximum number of length k <= m + n from digits of the two. The relative order of the digits from the same array must be preserved.
-     * Return an array of the k digits.
+     * Create the maximum number of length k <= m + n from digits of the two. The relative order of the digits from the
+     * same array must be preserved. Return an array of the k digits.
      */
     public int[] maxNumber(int[] nums1, int[] nums2, int k) {
-        int[] ans = new int[k];
-        // pick from two array to form k
-        for (int i = Math.max(k - nums2.length, 0); i <= Math.min(nums1.length, k); i++) {
+        int[] res = new int[k];
+        for (int i = 0; i <= Math.min(nums1.length, k); i++) {
+            if (i + nums2.length < k) {
+                continue;
+            }
             int[] res1 = largestDigits(nums1, i);
             int[] res2 = largestDigits(nums2, k - i);
-            int[] res = new int[k];
-            int pos1 = 0, pos2 = 0, tpos = 0;
+            int[] item = new int[k];
+            int pos1 = 0, pos2 = 0, idx = 0;
             while (pos1 < res1.length || pos2 < res2.length) {
-                res[tpos++] = greater(res1, pos1, res2, pos2) ? res1[pos1++] : res2[pos2++];
+                item[idx++] = greater(res1, pos1, res2, pos2) ? res1[pos1++] : res2[pos2++];
             }
-
-            if (!greater(ans, 0, res, 0)) {
-                ans = res;
+            if (greater(item, 0, res, 0)) {
+                res = item;
             }
         }
-        return ans;
+        return res;
     }
 
-    // nums1 = [9, 8], num2 = [9, 8, 3] -> false, ans = [9, 9, 8, 8, 3]
-    // nums1 = [6, 7], num2 = [6, 0, 4] -> true, ans = [6, 7, 6, 0, 4]
-    private boolean greater(int[] nums1, int i, int[] nums2, int j) {
+    // nums1 = [9, 8], num2 = [9, 8, 3] -> false
+    // nums1 = [6, 7], num2 = [6, 0, 4] -> true
+    boolean greater(int[] nums1, int i, int[] nums2, int j) {
         while (i < nums1.length && j < nums2.length && nums1[i] == nums2[j]) {
             i++;
             j++;
@@ -377,26 +383,73 @@ public class Solution300 {
         return j == nums2.length || (i < nums1.length && nums1[i] > nums2[j]);
     }
 
-    // find largest number from selected digit.
-    // nums2 = [5, 4, 3, 9], k = 2 -> [5, 9]
-    private int[] largestDigits(int[] nums, int k) {
+    // find largest k sequence, acted as stack, Compare 300. Longest Increasing Subsequence
+    // nums = [4, 5, 3, 9], k = 2 -> [5, 9]
+    int[] largestDigits(int[] nums, int k) {
         int[] res = new int[k];
-        int top = 0;
-        int cnt = nums.length - k;
+        if (k == 0) {
+            return res;
+        }
+        int cnt = 0;
         for (int i = 0; i < nums.length; i++) {
-            while (cnt > 0 && top > 0 && res[top - 1] < nums[i]) {
-                top--;
+            while (cnt > 0 && cnt + nums.length - i > k && nums[i] > res[cnt - 1]) {
                 cnt--;
             }
-            // !-> res is still full, discard nums[i]
-            if (top == k) {
-                cnt--;
-            }
-            if (top < k) {
-                res[top++] = nums[i];
+            if (cnt < res.length) { // remember (cnt < res.length)
+                res[cnt++] = nums[i]; // remember cnt++
             }
         }
         return res;
+    }
+
+    /**
+     * 330. Patching Array
+     */
+    public int minPatches(int[] nums, int n) {
+        long miss = 1;
+        int i = 0, res = 0;
+        while (miss <= n) {
+            if (i < nums.length && nums[i] <= miss) {
+                miss += nums[i++];
+            } else {
+                // patch miss and miss = miss + miss;
+                miss += miss;
+                res++;
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 332. Reconstruct Itinerary
+     */
+    class Solution332 {
+
+        LinkedList<String> res = new LinkedList<>();
+        Map<String, PriorityQueue<String>> map = new HashMap<>();
+
+        public List<String> findItinerary(List<List<String>> tickets) {
+            if (tickets == null || tickets.size() == 0) {
+                return res;
+            }
+            for (List<String> ticket : tickets) {
+                if (!map.containsKey(ticket.get(0))) {
+                    map.put(ticket.get(0), new PriorityQueue<>());
+                }
+                map.get(ticket.get(0)).add(ticket.get(1));
+            }
+            dfs("JFK");
+            return res;
+        }
+
+        // [A, B] [A, C] [C, A]
+        public void dfs(String cur) {
+            // use while, run again means previous run didn't traverse every flight
+            while (map.containsKey(cur) && !map.get(cur).isEmpty()) {
+                dfs(map.get(cur).remove());
+            }
+            res.addFirst(cur);
+        }
     }
 
     /**
@@ -468,6 +521,332 @@ public class Solution300 {
     }
 
     /**
+     * 347. Top K Frequent Elements
+     */
+    public List<Integer> topKFrequent(int[] nums, int k) {
+        @SuppressWarnings("unchecked")
+        List<Integer>[] buckets = new List[nums.length + 1];
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int e : nums) {
+            map.put(e, map.getOrDefault(e, 0) + 1);
+        }
+
+        for (int key : map.keySet()) {
+            int cnt = map.get(key);
+            if (buckets[cnt] == null) {
+                buckets[cnt] = new ArrayList<>();
+            }
+            buckets[cnt].add(key);
+        }
+
+        List<Integer> res = new ArrayList<>();
+        for (int i = buckets.length - 1; i >= 0 && k > 0; i--) {
+            if (buckets[i] != null) {
+                for (int j = 0; j < buckets[i].size() && k > 0; j++) {
+                    res.add(buckets[i].get(j));
+                    k--;
+                }
+            }
+        }
+        return res;
+    }
+
+    /**
+     * 352. Data Stream as Disjoint Intervals
+     */
+    class SummaryRanges {
+        TreeMap<Integer, int[]> tree;
+
+        public SummaryRanges() {
+            tree = new TreeMap<>();
+        }
+
+        public void addNum(int val) {
+            if (tree.containsKey(val))
+                return;
+            Integer l = tree.lowerKey(val);
+            Integer h = tree.higherKey(val);
+            if (l != null && h != null && tree.get(l)[1] + 1 == val && h == val + 1) {
+                tree.get(l)[1] = tree.get(h)[1];
+                tree.remove(h);
+            } else if (l != null && tree.get(l)[1] + 1 >= val) {
+                tree.get(l)[1] = Math.max(tree.get(l)[1], val);
+            } else if (h != null && h == val + 1) {
+                tree.put(val, new int[] { val, tree.get(h)[1] });
+                tree.remove(h);
+            } else {
+                tree.put(val, new int[] { val, val });
+            }
+        }
+
+        public int[][] getIntervals() {
+            int[][] res = new int[tree.size()][2];
+            int idx = 0;
+            for (Map.Entry<Integer, int[]> e : tree.entrySet()) {
+                res[idx++] = e.getValue();
+            }
+            return res;
+        }
+    }
+
+    /**
+     * 354. Russian Doll Envelopes
+     */
+    public int maxEnvelopes(int[][] envelopes) {
+        if (envelopes.length == 0) {
+            return 0;
+        }
+        // Arrays.sort(envelopes, (a, b) -> a[0] != b[0] ? a[0] - b[0] : b[1] - a[1]);
+        // Comparator 10ms vs Lambda 41ms
+        Arrays.sort(envelopes, new Comparator<int[]>() {
+            public int compare(int[] env1, int[] env2) {
+                if (env1[0] == env2[0])
+                    return env2[1] - env1[1];
+                else
+                    return env1[0] - env2[0];
+            }
+        });
+        int[] A = new int[envelopes.length];
+        int cnt = 0;
+        for (int[] envelope : envelopes) {
+            int left = 0, right = cnt;
+            while (left < right) {
+                int mid = left + (right - left) / 2;
+                if (A[mid] < envelope[1]) {
+                    left = mid + 1;
+                } else {
+                    right = mid;
+                }
+            }
+            A[left] = envelope[1];
+            if (left == cnt) {
+                // height > last one's, insert at idx left
+                // and width > last one's already
+                cnt++;
+            }
+        }
+        return cnt;
+    }
+
+    /**
+     * 355. Design Twitter
+     */
+    class Twitter {
+        private int timeStamp = 0;
+
+        // easy to find if user exist
+        private Map<Integer, User> userMap;
+
+        // Tweet link to next Tweet so that we can save a lot of time
+        // when we execute getNewsFeed(userId)
+        private class Tweet {
+            public int id;
+            public int time;
+            public Tweet next;
+
+            public Tweet(int id) {
+                this.id = id;
+                time = timeStamp++;
+                next = null;
+            }
+        }
+
+        // User can follow, unfollow and post itself
+        public class User {
+            public int id;
+            public Set<Integer> followed;
+            public Tweet tweet_head;
+
+            public User(int id) {
+                this.id = id;
+                followed = new HashSet<>();
+                follow(id); // first follow itself
+                tweet_head = null;
+            }
+
+            public void follow(int id) {
+                followed.add(id);
+            }
+
+            public void unfollow(int id) {
+                followed.remove(id);
+            }
+
+            // everytime user post a new tweet, add it to the head of tweet list.
+            public void post(int id) {
+                Tweet t = new Tweet(id);
+                t.next = tweet_head;
+                tweet_head = t;
+            }
+        }
+
+        /** Initialize your data structure here. */
+        public Twitter() {
+            userMap = new HashMap<Integer, User>();
+        }
+
+        /** Compose a new tweet. */
+        public void postTweet(int userId, int tweetId) {
+            if (!userMap.containsKey(userId)) {
+                User u = new User(userId);
+                userMap.put(userId, u);
+            }
+            userMap.get(userId).post(tweetId);
+
+        }
+
+        public List<Integer> getNewsFeed(int userId) {
+            List<Integer> res = new LinkedList<>();
+            if (!userMap.containsKey(userId))
+                return res;
+
+            Set<Integer> users = userMap.get(userId).followed;
+            PriorityQueue<Tweet> q = new PriorityQueue<Tweet>(users.size(), (a, b) -> (b.time - a.time));
+            for (int user : users) {
+                Tweet t = userMap.get(user).tweet_head;
+                // very imporant! If we add null to the head we are screwed.
+                if (t != null) {
+                    q.add(t);
+                }
+            }
+            int n = 0;
+            while (!q.isEmpty() && n < 10) {
+                Tweet t = q.poll();
+                res.add(t.id);
+                n++;
+                if (t.next != null)
+                    q.add(t.next);
+            }
+            return res;
+        }
+
+        /** Follower follows a followee. If the operation is invalid, it should be a no-op. */
+        public void follow(int followerId, int followeeId) {
+            if (!userMap.containsKey(followerId)) {
+                User u = new User(followerId);
+                userMap.put(followerId, u);
+            }
+            if (!userMap.containsKey(followeeId)) {
+                User u = new User(followeeId);
+                userMap.put(followeeId, u);
+            }
+            userMap.get(followerId).follow(followeeId);
+        }
+
+        /** Follower unfollows a followee. If the operation is invalid, it should be a no-op. */
+        public void unfollow(int followerId, int followeeId) {
+            if (!userMap.containsKey(followerId) || followerId == followeeId)
+                return;
+            userMap.get(followerId).unfollow(followeeId);
+        }
+    }
+
+    /**
+     * 368. Largest Divisible Subset
+     */
+    public List<Integer> largestDivisibleSubset(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return new ArrayList<>();
+        }
+        Arrays.sort(nums);
+        // DFS is TLE, then consider DP
+        int[] DP = new int[nums.length];
+        int[] pre = new int[nums.length];
+        int max = 1;
+        int maxIndex = 0;
+        for (int i = 0; i < nums.length; i++) {
+            DP[i] = 1;
+            pre[i] = -1;
+            for (int j = 0; j < i; j++) {
+                if (nums[i] % nums[j] == 0) {
+                    if (DP[j] + 1 > DP[i]) {
+                        DP[i] = DP[j] + 1;
+                        pre[i] = j;
+                    }
+                    if (DP[i] > max) {
+                        max = DP[i];
+                        maxIndex = i;
+                    }
+                }
+            }
+        }
+        List<Integer> res = new ArrayList<>();
+        while (maxIndex != -1) {
+            res.add(nums[maxIndex]);
+            maxIndex = pre[maxIndex];
+        }
+        Collections.reverse(res);
+        return res;
+    }
+
+    /**
+     * 372. Super Pow
+     */
+    private int mod = 1337;
+
+    public int superPow(int a, int[] b) {
+        int res = 1;
+        for (int i = b.length - 1; i >= 0; i--) {
+            // *= is wrong
+            res = res * quickPow(a, b[i]) % mod;
+            a = quickPow(a, 10);
+        }
+        return res;
+    }
+
+    // treat b as binary, a = a * a
+    int quickPow(int a, int b) {
+        int res = 1;
+        a %= mod;
+        while (b > 0) {
+            if ((b & 1) != 0) {
+                res = res * a % mod;
+            }
+            a = a * a % mod;
+            b >>= 1;
+        }
+        return res;
+    }
+
+    /**
+     * 376. Wiggle Subsequence
+     */
+    public int wiggleMaxLength(int[] nums) {
+        if (nums.length == 0) {
+            return 0;
+        }
+        int p = 1, n = 1;
+        // [i] depends only on [i - 1]
+        for (int i = 1; i < nums.length; i++) {
+            if (nums[i] < nums[i - 1]) {
+                n = p + 1;
+            } else if (nums[i] > nums[i - 1]) {
+                p = n + 1;
+            }
+        }
+        return Math.max(n, p);
+    }
+
+    // V2 [i] compares with every previous
+    public int wiggleMaxLength2(int[] nums) {
+        int[] P = new int[nums.length];
+        int[] N = new int[nums.length];
+        P[0] = N[0] = 1;
+        for (int i = 1; i < nums.length; i++) {
+            P[i] = N[i] = 1;
+            for (int k = i - 1; k >= 0; k--) {
+                if (nums[k] < nums[i]) {
+                    P[i] = Math.max(P[i], N[k] + 1);
+                }
+                if (nums[k] > nums[i]) {
+                    N[i] = Math.max(N[i], P[k] + 1);
+                }
+            }
+        }
+        return Math.max(P[nums.length - 1], N[nums.length - 1]);
+    }
+
+    /**
      * 378. Kth Smallest Element in a Sorted Matrix
      */
     public int kthSmallest(int[][] matrix, int k) {
@@ -493,7 +872,7 @@ public class Solution300 {
                 i++;
                 cnt += j + 1;
             } else {
-                j--;
+                j--; // discard column
             }
         }
         return cnt;
@@ -529,65 +908,130 @@ public class Solution300 {
     }
 
     /**
+     * 385. Mini Parser
+     */
+    public NestedInteger deserialize(String s) {
+        NestedInteger res = new NestedInteger();
+        if (s.equals("[]")) {
+            return res;
+        }
+        if (s.charAt(0) != '[') {
+            res.setInteger(Integer.parseInt(s));
+            return res;
+        }
+
+        int count = 0, lastComma = 0;
+        for (int i = 1; i < s.length() - 1; i++) {
+            char cur = s.charAt(i);
+            if (cur == '[') {
+                count++;
+            } else if (cur == ']') {
+                count--;
+            } else if (count == 0 && cur == ',') {
+                res.add(deserialize(s.substring(lastComma + 1, i)));
+                lastComma = i;
+            }
+        }
+        res.add(deserialize(s.substring(lastComma + 1, s.length() - 1)));
+        return res;
+    }
+
+    public List<Integer> lexicalOrder(int n) {
+        List<Integer> res = new ArrayList<>();
+        // need to start from 1, can't use dfs(res, 0, n)
+        for (int i = 1; i <= 9 && i <= n; i++) {
+            dfs(res, i, n);
+        }
+        return res;
+    }
+
+    void dfs(List<Integer> res, int cur, int n) {
+        if (cur > n) {
+            return;
+        }
+        res.add(cur);
+        for (int i = 0; i <= 9; i++) {
+            if (cur * 10 + i > n) {
+                break;
+            }
+            dfs(res, cur * 10 + i, n);
+        }
+    }
+
+    /**
      * 388. Longest Absolute File Path
      */
     public int lengthLongestPath(String input) {
-        int result = 0, curLen = 0;
+        int res = 0, path = 0;
         Stack<Integer> stack = new Stack<>();
 
         for (String s : input.split("\n")) {
             int level = s.lastIndexOf("\t") + 1;
             int len = s.length() - level;
-            // if current directory/file depth is lower that the top directory/file on the stack, pop from stack
+            // stack stores folder(append \), remove folders of same or larger level
             while (stack.size() > level) {
-                curLen -= stack.pop();
+                path -= stack.pop();
             }
-            if (s.contains(".")) {
-                int val = curLen + len;
-                result = val > result ? val : result;
-            } else {
-                // add end /
-                curLen += len + 1;
+            if (!s.contains(".")) {
+                path += len + 1;
                 stack.add(len + 1);
+            } else {
+                res = Math.max(path + len, res);
             }
         }
-        return result;
+        return res;
+    }
+
+    public int lastRemaining(int n) {
+        boolean left = true;
+        int remaining = n;
+        int step = 1;
+        int head = 1;
+        while (remaining > 1) {
+            if (left || remaining % 2 == 1) {
+                head = head + step;
+            }
+            remaining = remaining / 2;
+            step = step * 2;
+            left = !left;
+        }
+        return head;
     }
 
     /**
      * 394. Decode String
      */
     public String decodeString(String s) {
-        String res = "";
-        Stack<Integer> counts = new Stack<>();
-        Stack<String> strs = new Stack<>();
-        int i = 0;
-        while (i < s.length()) {
-            if (Character.isDigit(s.charAt(i))) {
-                int num = 0;
-                while (Character.isDigit(s.charAt(i))) {
-                    num = num * 10 + (s.charAt(i) - '0');
+        Stack<Integer> cntStack = new Stack<>();
+        Stack<String> stack = new Stack<>();
+        String cur = "";
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (Character.isDigit(c)) {
+                int start = i;
+                while (s.charAt(i + 1) != '[') {
                     i++;
                 }
-                counts.push(num);
-                continue;
-            }
-            if (s.charAt(i) == '[') {
-                strs.push(res);
-                res = "";
-            } else if (s.charAt(i) == ']') {
-                StringBuilder sb = new StringBuilder(strs.pop());
-                int count = counts.pop();
-                for (int j = 0; j < count; j++) {
-                    sb.append(res);
-                }
-                res = sb.toString();
+                int val = Integer.parseInt(s.substring(start, i + 1));
+                cntStack.push(val);
+                stack.push(cur);
+            } else if (c == '[') {
+                cur = "";
+            } else if (c == ']') {
+                cur = stack.pop() + dup(cntStack.pop(), cur);
             } else {
-                res += s.charAt(i);
+                cur += c;
             }
-            i++;
         }
-        return res;
+        return cur;
+    }
+
+    String dup(int val, String s) {
+        StringBuilder sb = new StringBuilder();
+        while (val-- > 0) {
+            sb.append(s);
+        }
+        return sb.toString();
     }
 
     /**
@@ -597,13 +1041,13 @@ public class Solution300 {
         Map<String, String> rootMap = new HashMap<>();
         Map<String, Double> valMap = new HashMap<>();
 
-        public double[] calcEquation(String[][] equations, double[] values, String[][] queries) {
-            if (equations == null || equations.length == 0) {
+        public double[] calcEquation(List<List<String>> equations, double[] values, List<List<String>> queries) {
+            if (equations == null || equations.size() == 0) {
                 return new double[] {};
             }
 
-            for (int i = 0; i < equations.length; i++) {
-                String x1 = equations[i][0], x2 = equations[i][1];
+            for (int i = 0; i < equations.size(); i++) {
+                String x1 = equations.get(i).get(0), x2 = equations.get(i).get(1);
                 rootMap.putIfAbsent(x1, x1);
                 rootMap.putIfAbsent(x2, x2);
                 valMap.putIfAbsent(x1, 1.0);
@@ -615,10 +1059,10 @@ public class Solution300 {
                 valMap.put(r2, valMap.get(x1) * values[i] / valMap.get(x2));
             }
 
-            double[] res = new double[queries.length];
-            for (int i = 0; i < queries.length; i++) {
+            double[] res = new double[queries.size()];
+            for (int i = 0; i < queries.size(); i++) {
                 res[i] = -1.0;
-                String x1 = queries[i][0], x2 = queries[i][1];
+                String x1 = queries.get(i).get(0), x2 = queries.get(i).get(1);
                 if (!rootMap.containsKey(x1) || !rootMap.containsKey(x2))
                     continue;
                 String r1 = find(x1);
@@ -632,7 +1076,10 @@ public class Solution300 {
         private String find(String item) {
             if (rootMap.get(item).equals(item))
                 return item;
-            return find(rootMap.get(item));
+            String root = find(rootMap.get(item));
+            // can't shortcut
+            // rootMap.put(item, root);
+            return root;
         }
 
         // { { "a", "b" }, { "c", "d" }, { "b", "c" } }, { 2.0, 3.0, 5.0 }
@@ -652,7 +1099,7 @@ public class Solution300 {
         }
     }
 
-    class Solution399v2 {
+    class Solution399V2 {
         public double[] calcEquation(String[][] equations, double[] values, String[][] queries) {
             Map<String, Map<String, Double>> graph = new HashMap<>();
             for (int i = 0; i < equations.length; i++) {
@@ -685,11 +1132,11 @@ public class Solution300 {
             // distance from vexStart
             Map<String, Double> value = new HashMap<>();
             // check if the vertex has been in the queue
-            Set<String> validation = new HashSet<>();
+            Set<String> visited = new HashSet<>();
             // init
             queue.add(vexStart);
-            validation.add(vexStart);
-            value.put(vexStart, 1d);
+            visited.add(vexStart);
+            value.put(vexStart, 1.0);
 
             String currentNode, nextNode;
             while (!queue.isEmpty()) {
@@ -699,9 +1146,9 @@ public class Solution300 {
                     value.put(nextNode, value.get(currentNode) * arc.getValue());
                     if (nextNode.equals(vexEnd)) {
                         return value.get(vexEnd);
-                    } else if (!validation.contains(nextNode)) {
+                    } else if (!visited.contains(nextNode)) {
                         queue.add(nextNode);
-                        validation.add(nextNode);
+                        visited.add(nextNode);
                     }
                 }
             }
@@ -710,11 +1157,18 @@ public class Solution300 {
     }
 
     @Test
-    public void test() {
+    public void test0() {
         countSmaller(new int[] { 5, 2, 6, 1 });
         System.out.println(maxNumber(new int[] { 3, 4, 6, 5 }, new int[] { 9, 1, 2, 5, 8, 3 }, 5));
-        Solution399 s = new Solution399();
+        Solution399V2 s = new Solution399V2();
         s.calcEquation(new String[][] { { "a", "b" }, { "c", "d" }, { "b", "d" } }, new double[] { 2.0, 3.0, 5.0 },
-                new String[][] { { "a", "d" }, { "a", "c" }, { "c", "a" } });
+                new String[][] { { "a", "b" }, { "a", "c" }, { "c", "a" } });
+        int[] A = { 9, 1, 2, 5, 8, 3 };
+        largestDigits(A, 3);
+    }
+
+    @Test
+    public void test() {
+        minPatches(new int[] { 1, 5, 10 }, 20);
     }
 }
