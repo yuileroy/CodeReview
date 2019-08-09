@@ -21,10 +21,6 @@ public class Solution293 {
                 res.add(s.substring(0, i) + "--" + s.substring(i + 2, s.length()));
             }
         }
-        /*
-         * char[] ch = s.toCharArray(); for (int i = 0; i < ch.length - 1; i++) { if (ch[i] == '+' && ch[i + 1] == '+')
-         * { ch[i] = '-'; ch[i + 1] = '-'; res.add(String.valueOf(ch)); ch[i] = '+'; ch[i + 1] = '+'; } }
-         */
         return res;
     }
 
@@ -34,45 +30,38 @@ public class Solution293 {
     Map<String, Boolean> map = new HashMap<>();
 
     public boolean canWin(String s) {
-        // boolean res = false;
         for (int i = 0; i < s.length() - 1; i++) {
             if (s.charAt(i) == '+' && s.charAt(i + 1) == '+') {
                 String flip = s.substring(0, i) + "--" + s.substring(i + 2);
                 if ((map.containsKey(flip) && !map.get(flip)) || (!map.containsKey(flip) && !canWin(flip))) {
                     map.put(s, true);
-                    // ! can return true since s is not changed
-                    // res = true;
                     return true;
                 }
             }
         }
-        // if (!map.containsKey(s) || !map.get(s)) {
-        // map.put(s, false);
-        // }
-        // return res;
         map.put(s, false);
         return false;
     }
 
+    // V2
     public boolean canWin2(String s) {
         char[] ch = s.toCharArray();
         return canWin(ch);
     }
 
     boolean canWin(char[] ch) {
-        boolean res = false;
         for (int i = 0; i < ch.length - 1; i++) {
             if (ch[i] == '+' && ch[i + 1] == '+') {
                 ch[i] = '-';
                 ch[i + 1] = '-';
                 if (!canWin(ch)) {
-                    res = true;
+                    return true;
                 }
                 ch[i] = '+';
                 ch[i + 1] = '+';
             }
         }
-        return res;
+        return false;
     }
 
     // 296. Best Meeting Point

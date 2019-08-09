@@ -244,8 +244,9 @@ public class Solution200 {
     /**
      * 220. Contains Duplicate III
      * 
-     * Given an array of integers, find out whether there are two distinct indices i and j in the array such that the absolute difference between
-     * nums[i] and nums[j] is at most t and the absolute difference between i and j is at most k
+     * Given an array of integers, find out whether there are two distinct indices i and j in the array such that the
+     * absolute difference between nums[i] and nums[j] is at most t and the absolute difference between i and j is at
+     * most k
      */
     public boolean containsNearbyAlmostDuplicate(int[] nums, int k, int t) {
         int len = nums.length;
@@ -302,7 +303,8 @@ public class Solution200 {
     /**
      * 221. Maximal Square
      * 
-     * Given a 2D binary matrix filled with 0's and 1's, find the largest square containing only 1's and return its area.
+     * Given a 2D binary matrix filled with 0's and 1's, find the largest square containing only 1's and return its
+     * area.
      */
     public int maximalSquare(char[][] matrix) {
         if (matrix == null || matrix.length == 0 || matrix[0].length == 0) {
@@ -594,6 +596,121 @@ public class Solution200 {
     }
 
     /**
+     * 250. Count Univalue Subtrees
+     * 
+     * Given a binary tree, count the number of uni-value subtrees.A Uni-value subtree means all nodes of the subtree
+     * have the same value.
+     */
+    class Solution250 {
+        int res = 0;
+
+        public int countUnivalSubtrees(TreeNode root) {
+            if (root == null) {
+                return 0;
+            }
+            isUni(root);
+            return res;
+        }
+
+        boolean isUni(TreeNode root) {
+            if (root.left == null && root.right == null) {
+                res++;
+                return true;
+            }
+            boolean bv = true;
+            if (root.left != null) {
+                bv = isUni(root.left) && root.left.val == root.val;
+            }
+            // don't shortcut
+            // bv = bv && isUni(root.right) && root.right.val == root.val;
+            if (root.right != null) {
+                bv = isUni(root.right) && root.right.val == root.val && bv;
+            }
+            res += bv ? 1 : 0;
+            return bv;
+        }
+    }
+
+    /**
+     * 254. Factor Combinations
+     *
+     * Write a function that takes an integer n and return all possible combinations of its factors.
+     */
+    class Solution254 {
+        public List<List<Integer>> getFactors(int n) {
+            List<List<Integer>> res = new ArrayList<>();
+            // dfs(2, n, new ArrayList<>(), res);
+            build(2, n, new ArrayList<>(), res);
+            return res;
+        }
+
+        void build(int start, int n, List<Integer> item, List<List<Integer>> res) {
+            for (int i = start; i <= n / i; i++) {
+                if (n % i == 0) {
+                    item.add(i);
+                    // -> add the pair and save an item
+                    item.add(n / i);
+                    res.add(new ArrayList<>(item));
+                    item.remove(item.size() - 1);
+                    // <-
+                    build(i, n / i, item, res);
+                    item.remove(item.size() - 1);
+                }
+            }
+        }
+
+        void dfs(int start, int n, List<Integer> item, List<List<Integer>> res) {
+            // ! correct but inefficient
+            if (n == 1 && item.size() > 1) {
+                res.add(new ArrayList<>(item));
+                return;
+            }
+            for (int i = start; i <= n; i++) {
+                if (n % i == 0) {
+                    item.add(i);
+                    dfs(i, n / i, item, res);
+                    item.remove(item.size() - 1);
+                }
+            }
+        }
+    }
+
+    /**
+     * 255. Verify Preorder Sequence in Binary Search Tree
+     */
+    // Input: [5,2,1,3,6], Output: true
+    // 1. modify array to act as stack
+    // 2. stack, pop() is inorder
+    // 3. recursive, inefficient
+    public boolean verifyPreorder(int[] preorder) {
+        int low = Integer.MIN_VALUE, i = -1;
+        for (int p : preorder) {
+            if (p < low)
+                return false;
+            while (i > -1 && p > preorder[i]) {
+                low = preorder[i--];
+            }
+            preorder[++i] = p;
+        }
+        return true;
+    }
+
+    // V2
+    public boolean verifyPreorder2(int[] preorder) {
+        Stack<Integer> stack = new Stack<>();
+        int inorder = Integer.MIN_VALUE;
+
+        for (int v : preorder) {
+            if (v < inorder)
+                return false;
+            while (!stack.isEmpty() && v > stack.peek())
+                inorder = stack.pop();
+            stack.push(v);
+        }
+        return true;
+    }
+
+    /**
      * 264. Ugly Number II
      */
     public int nthUglyNumber(int n) {
@@ -624,6 +741,10 @@ public class Solution200 {
         int d = a < b ? a : b;
         return d < c ? d : c;
     }
+
+    /**
+     * @ 269. Alien Dictionary
+     */
 
     /**
      * 275. H-Index II

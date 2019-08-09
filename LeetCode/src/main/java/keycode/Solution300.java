@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import keycode.util.ListNode;
 import keycode.util.NestedInteger;
+import leetcode.TreeNode;
 
 public class Solution300 {
 
@@ -49,6 +50,56 @@ public class Solution300 {
             li.set(start, e);
         }
         return li.size();
+    }
+
+    /**
+     * 305. Number of Islands II
+     * 
+     * count the number of islands after each addLand operation
+     */
+    public List<Integer> numIslands2(int m, int n, int[][] positions) {
+
+        int[][] B = { { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 } };
+        int[] U = new int[m * n];
+        // for (int i = 0; i < U.length; i++) U[i] = i;
+        // set U[i] = i to indicate it's an island, -1 as water
+        Arrays.fill(U, -1);
+        List<Integer> res = new ArrayList<>();
+        int cnt = 0;
+
+        for (int[] e : positions) {
+            int idx = e[0] * n + e[1];
+            if (U[idx] != -1) {
+                res.add(cnt);
+                continue;
+            }
+            U[idx] = idx;
+            cnt++;
+            for (int[] b : B) {
+                int nx = e[0] + b[0];
+                int ny = e[1] + b[1];
+                int idx2 = nx * n + ny;
+                if (nx < 0 || nx >= m || ny < 0 || ny >= n || U[idx2] == -1) {
+                    continue;
+                }
+                // union
+                int v1 = find(U, idx);
+                int v2 = find(U, idx2);
+                U[v1] = v2;
+                if (v1 != v2)
+                    cnt--;
+            }
+            res.add(cnt);
+        }
+        return res;
+    }
+
+    private int find(int[] U, int i) {
+        if (U[i] == i) {
+            return i;
+        }
+        U[i] = find(U, U[i]);
+        return U[i];
     }
 
     /**
@@ -348,6 +399,37 @@ public class Solution300 {
     }
 
     /**
+     * 320. Generalized Abbreviation
+     */
+    // Input: "word", Output:
+    // ["word", "1ord", "w1rd", "wo1d", "wor1", "2rd", "w2d",
+    // "wo2", "1o1d", "1or1", "w1r1", "1o2", "2r1", "3d", "w3", "4"]
+    public List<String> generateAbbreviations(String word) {
+        List<String> res = new ArrayList<>();
+        dfs(0, "", word, res);
+        return res;
+    }
+
+    void dfs(int start, String item, String word, List<String> res) {
+        if (start >= word.length()) {
+            res.add(item);
+            return;
+        }
+        for (int i = start; i < word.length(); i++) {
+            String item1 = item + (i - start + 1);
+            if (i < word.length() - 1) {
+                item1 += word.charAt(i + 1);
+            }
+            // 1o + dfs, 2r + dfs, 3d + dfs, 4
+            dfs(i + 2, item1, word, res);
+            if (i == start) {
+                // w + dfs
+                dfs(i + 1, item + word.charAt(i), word, res);
+            }
+        }
+    }
+
+    /**
      * 321. Create Maximum Number
      * 
      * Create the maximum number of length k <= m + n from digits of the two. The relative order of the digits from the
@@ -449,6 +531,48 @@ public class Solution300 {
                 dfs(map.get(cur).remove());
             }
             res.addFirst(cur);
+        }
+    }
+
+    /**
+     * 333. Largest BST Subtree
+     * 
+     * Given a binary tree, find the largest subtree which is a Binary Search Tree
+     */
+    class Solution333 {
+        class Result {
+            int size, lower, upper;
+
+            Result(int size, int lower, int upper) {
+                this.size = size;
+                this.lower = lower;
+                this.upper = upper;
+            }
+        }
+
+        int max = 0;
+
+        public int largestBSTSubtree(TreeNode root) {
+            if (root == null) {
+                return 0;
+            }
+            traverse(root);
+            return max;
+        }
+
+        private Result traverse(TreeNode root) {
+            if (root == null) {
+                return new Result(0, Integer.MAX_VALUE, Integer.MIN_VALUE);
+            }
+            Result left = traverse(root.left);
+            Result right = traverse(root.right);
+            if (left.size == -1 || right.size == -1 || root.val <= left.upper || root.val >= right.lower) {
+                return new Result(-1, 0, 0);
+            }
+            int size = left.size + 1 + right.size;
+            max = Math.max(size, max);
+            // not just left.lower, cause left maybe null~Integer.MAX_VALUE
+            return new Result(size, Math.min(left.lower, root.val), Math.max(right.upper, root.val));
         }
     }
 
@@ -742,6 +866,51 @@ public class Solution300 {
     }
 
     /**
+     * 358. Rearrange String k Distance Apart
+     */
+    // Input: s = "aabbcc", k = 3, Output: "abcabc"
+    public String rearrangeString2(String s, int k) {
+        if (k < 2 || s.length() < 2) {
+            return s;
+        }
+        int[] cnt = new int[26];
+        for (char ch : s.toCharArray()) {
+            cnt[ch - 'a']++;
+        }
+
+        // greedy, fill with max-count char first with batch size k
+        PriorityQueue<int[]> pq = new PriorityQueue<int[]>((a, b) -> a[1] == b[1] ? a[0] - b[0] : b[1] - a[1]);
+        for (int i = 0; i < cnt.length; i++) {
+            if (cnt[i] > 0) {
+                pq.add(new int[] { i, cnt[i] });
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        int total = s.length();
+        while (total > 0) {
+            List<int[]> list = new ArrayList<>();
+            int batch = k;
+            while (batch-- > 0 && total > 0) {
+                // no valid char to fill in
+                if (pq.isEmpty()) {
+                    return "";
+                }
+                int[] cur = pq.remove();
+                sb.append((char) (cur[0] + 'a'));
+                cur[1]--;
+                total--;
+                if (cur[1] > 0) {
+                    list.add(cur);
+                }
+            }
+            // the order in this list remains same, k=2, abba will not happen
+            pq.addAll(list);
+        }
+        return sb.toString();
+    }
+
+    /**
      * 368. Largest Divisible Subset
      */
     public List<Integer> largestDivisibleSubset(int[] nums) {
@@ -777,6 +946,29 @@ public class Solution300 {
         }
         Collections.reverse(res);
         return res;
+    }
+
+    /**
+     * 370. Range Addition
+     */
+    // Input: length = 5, updates = [[1,3,2],[2,4,3],[0,2,-2]]
+    // Output: [-2,0,3,5,3]
+    public int[] getModifiedArray(int length, int[][] updates) {
+        int[] A = new int[length];
+        // +=[start], -=[end + 1]
+        for (int[] e : updates) {
+            A[e[0]] += e[2];
+            if (e[1] + 1 < length) {
+                A[e[1] + 1] -= e[2];
+            }
+        }
+        int diff = 0;
+        for (int i = 0; i < length; i++) {
+            int tmp = diff;
+            diff += A[i];
+            A[i] += tmp;
+        }
+        return A;
     }
 
     /**

@@ -94,7 +94,7 @@ public class Solution256 {
 			return i;
 		}
 		// return find(A, A[i]);
-		// better update A[i] for shortcut
+		// update A[i] for shortcut
 		A[i] = find(A, A[i]);
 		return A[i];
 	}

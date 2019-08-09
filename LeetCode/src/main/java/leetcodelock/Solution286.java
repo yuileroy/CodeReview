@@ -149,8 +149,8 @@ public class Solution286 {
             for (int i = sidx; i < str.length(); i++) {
                 String cur = str.substring(sidx, i + 1);
                 char c = pattern.charAt(pidx);
-                if (m - i + 1 < n - pidx + 1)
-                    continue; // the number of str character left should more than the number of pattern left
+                if (m - i < n - pidx)
+                    continue; // not enough char
                 if (map.containsKey(c)) {
                     if (!map.get(c).equals(cur))
                         continue;

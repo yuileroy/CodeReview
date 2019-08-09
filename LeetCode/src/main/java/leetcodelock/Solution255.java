@@ -9,7 +9,7 @@ import java.util.Stack;
 // Output: true
 public class Solution255 {
 
-	// 1. modify array to avoid stack
+	// 1. modify array to act as stack
 	// 2. stack, pop() is inorder
 	// 3. recursive, inefficient
 
@@ -18,8 +18,9 @@ public class Solution255 {
 		for (int p : preorder) {
 			if (p < low)
 				return false;
-			while (i > -1 && p > preorder[i])
+			while (i > -1 && p > preorder[i]) {
 				low = preorder[i--];
+			}
 			preorder[++i] = p;
 		}
 		return true;
@@ -44,7 +45,7 @@ public class Solution255 {
 	}
 
 	private boolean valid(int[] preorder, int s, int e) {
-		if (s + 1 >= e) {
+		if (e - s <= 1) {
 			return true;
 		}
 		// at least 3 nodes

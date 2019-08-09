@@ -9,9 +9,7 @@ import leetcode.TreeNode;
 
 public class Solution320 {
     // 320. Generalized Abbreviation
-    // Write a function to generate the generalized abbreviations of a word.
-    // Input: "word"
-    // Output:
+    // Input: "word", Output:
     // ["word", "1ord", "w1rd", "wo1d", "wor1", "2rd", "w2d",
     // "wo2", "1o1d", "1or1", "w1r1", "1o2", "2r1", "3d", "w3", "4"]
     List<String> res = new ArrayList<>();
@@ -118,6 +116,7 @@ public class Solution320 {
 }
 
 // 333. Largest BST Subtree
+// Given a binary tree, find the largest subtree which is a Binary Search Tree (BST)
 class Solution333 {
     class Result {
         int size, lower, upper;
@@ -150,7 +149,7 @@ class Solution333 {
         }
         int size = left.size + 1 + right.size;
         max = Math.max(size, max);
-        // min(left.lower, root.val), cause left maybe null-Integer.MAX_VALUE
+        // not just left.lower, cause left maybe null~Integer.MAX_VALUE
         return new Result(size, Math.min(left.lower, root.val), Math.max(right.upper, root.val));
     }
 
@@ -180,11 +179,5 @@ class Solution333 {
             }
             return res;
         }
-
-        /*
-         * wrong answer int lv = 1; public int depthSum(List<NestedInteger> nestedList) { int res = 0; for
-         * (NestedInteger item : nestedList) { if (item.isInteger()) { res += lv * item.getInteger(); } else { res +=
-         * (lv + 1) * depthSum(item.getList()); } } return res; }
-         */
     }
 }
