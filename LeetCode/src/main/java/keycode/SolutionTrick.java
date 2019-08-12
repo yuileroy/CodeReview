@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import org.junit.Test;
+
 public class SolutionTrick {
 
     /**
@@ -251,5 +253,174 @@ public class SolutionTrick {
                 return this.a == other.a && this.b == other.b;
             }
         }
+    }
+
+    public int dayOfYear(String date) {
+        int[] M = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+        int year = Integer.parseInt(date.substring(0, 4));
+        int month = Integer.parseInt(date.substring(5, 7));
+        int day = Integer.parseInt(date.substring(8));
+        if (year % 4 == 0) {
+            M[1] = 29;
+        }
+        if (year == 1900) {
+            M[1] = 28;
+        }
+        int res = 0, i = 0;
+        while (i < month - 1) {
+            res += M[i++];
+        }
+        res += day;
+        return res;
+    }
+
+    public int numRollsToTarget2(int d, int f, int target) {
+        int mod = 1000000007;
+        long[] dp = new long[target + 1];
+        dp[0] = 1;
+        for (int i = 0; i < d; i++) {
+            long[] ndp = new long[target + 1];
+            for (int j = 0; j <= target; j++) {
+                if (j + 1 < ndp.length)
+                    ndp[j + 1] += dp[j];
+                if (j + f + 1 < ndp.length)
+                    ndp[j + f + 1] += mod - dp[j];
+            }
+            for (int j = 1; j <= target; j++) {
+                ndp[j] += ndp[j - 1];
+                ndp[j] %= mod;
+            }
+            dp = ndp;
+        }
+        return (int) dp[target];
+    }
+
+    public int numRollsToTarget(int d, int f, int target) {
+        int mod = 1000000007;
+        int[][] A = new int[d][target + 1];
+        for (int j = 1; j <= f && j <= target; j++) {
+            A[0][j] = 1;
+        }
+        for (int i = 1; i < d; i++) {
+            for (int j = 1; j <= f; j++) {
+                // j == 1, dice = 1
+                for (int k = 1; k < target; k++) {
+                    if (k + j <= target) {
+                        A[i][k + j] = (A[i][k + j] + A[i - 1][k]) % mod;
+                    }
+                }
+            }
+        }
+        return A[d - 1][target];
+    }
+
+    public int maxRepOpt1V1(String text) {
+        List<List<int[]>> A = new ArrayList<>();
+        int n = 26;
+        while (n-- > 0) {
+            A.add(new ArrayList<>());
+        }
+        int start = 0, res = 0;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (i == text.length() - 1 || text.charAt(i + 1) != c) {
+                A.get(c - 'a').add(new int[] { start, i });
+                res = Math.max(res, i - start + 1);// one
+                start = i + 1;
+            }
+        }
+
+        for (int i = 0; i < 26; i++) {
+            List<int[]> list = A.get(i);
+            if (list.size() < 2) {
+                continue;
+            }
+            int addOne = list.size() > 2 ? 1 : 0;
+            for (int j = 0; j < list.size() - 1; j++) {
+                res = Math.max(res, list.get(j)[1] - list.get(j)[0] + 2); // aabbaa -> 3
+                if (list.get(j)[1] + 2 == list.get(j + 1)[0]) {
+                    // aabaa -> 4
+                    res = Math.max(res, list.get(j + 1)[1] - list.get(j)[0] + addOne);
+                }
+            }
+
+        }
+        return res;
+    }
+
+    // V2, works
+    public int maxRepOpt1V2(String text) {
+        char[] A = text.toCharArray();
+        int res = 0;
+        int cnt[] = new int[26];
+        for (char c : A) {
+            cnt[c - 'a']++;
+        }
+
+        for (char c = 'a'; c <= 'z'; c++) {
+            int cur = 0;
+            int pre = 0;
+            for (int i = 0; i < A.length; i++) {
+                if (A[i] == c) {
+                    cur++;
+                }
+                while (i - pre - cur > 0) {
+                    if (A[pre] == c) {
+                        cur--;
+                    }
+                    pre++;
+                }
+                res = Math.max(res, Math.min(i - pre + 1, cnt[c - 'a']));
+            }
+        }
+        return res;
+    }
+
+    // works
+    public int maxRepOpt1V3(String text) {
+        int result = 0;
+        for (int i = 0; i < 26; i++) {
+            char c = (char) ('a' + i);
+            int index = 0;
+            int localMax = 0;
+            int numGroup = 0;
+            boolean hasContatenate = false;
+            int l1 = 0;
+            int l2 = 0;
+            while (index < text.length()) {
+                if (text.charAt(index) == c) {
+                    l1++;
+                } else {
+                    localMax = Math.max(localMax, l1 + l2);
+                    if (l1 > 0) {
+                        numGroup++;
+                        if (l2 > 0) {
+                            hasContatenate = true;
+                        }
+                    }
+                    l2 = l1;
+                    l1 = 0;
+                }
+                index++;
+            }
+            if (l1 > 0) {
+                localMax = Math.max(localMax, l1 + l2);
+                numGroup++;
+                if (l2 > 0) {
+                    hasContatenate = true;
+                }
+            }
+            if (numGroup >= 3 || (numGroup == 2 && !hasContatenate)) {
+                localMax++;
+            }
+            result = Math.max(result, localMax);
+        }
+        return result;
+    }
+
+    @Test
+    public void test() {
+        System.out.println(maxRepOpt1V1("aaabbaaa"));
+        // System.out.println(numRollsToTarget(2, 6, 7));
     }
 }

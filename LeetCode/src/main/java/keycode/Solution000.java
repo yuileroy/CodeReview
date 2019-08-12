@@ -703,6 +703,26 @@ public class Solution000 {
         }
     }
 
+    // boolean version, @See 416. Partition Equal Subset Sum
+    boolean helper(int[] nums, int remain, int start) {
+        if (remain == 0) {
+            return true;
+        }
+
+        for (int i = start; i < nums.length; i++) {
+            if (nums[i] > remain) {
+                return false;
+            }
+            if (i > start && nums[i] == nums[i - 1]) {
+                continue;
+            }
+            if (helper(nums, remain - nums[i], i + 1)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * 42. Trapping Rain Water
      */
@@ -976,8 +996,8 @@ public class Solution000 {
         }
         // no need to use visited[]
         board[i][j] = '#';
-        boolean res = find(board, word, i, j - 1, k + 1) || find(board, word, i, j + 1, k + 1) || find(board, word, i - 1, j, k + 1)
-                || find(board, word, i + 1, j, k + 1);
+        boolean res = find(board, word, i, j - 1, k + 1) || find(board, word, i, j + 1, k + 1)
+                || find(board, word, i - 1, j, k + 1) || find(board, word, i + 1, j, k + 1);
         board[i][j] = word.charAt(k);
         return res;
     }
