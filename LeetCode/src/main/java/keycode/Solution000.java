@@ -41,33 +41,31 @@ public class Solution000 {
         int n = nums2.length;
         int mid = (m + n) / 2;
         if ((m + n) % 2 == 0) {
-            return 0.5 * (kth(nums1, m, nums2, n, mid) + kth(nums1, m, nums2, n, mid + 1));
+            return 0.5 * (kth(nums1, nums2, mid) + kth(nums1, nums2, mid + 1));
         }
-        return (double) kth(nums1, m, nums2, n, mid + 1);
+        return (double) kth(nums1, nums2, mid + 1);
     }
 
-    int kth(int arr1[], int m, int arr2[], int n, int k) {
+    int kth(int A[], int B[], int k) {
+        int m = A.length, n = B.length;
         if (m > n)
-            return kth(arr2, n, arr1, m, k);
+            return kth(B, A, k);
         if (m == 0)
-            return arr2[k - 1];
+            return B[k - 1];
         if (k == 1)
-            return Math.min(arr1[0], arr2[0]);
+            return Math.min(A[0], B[0]);
 
-        // divide and conquer, n >= m >= 1, k >= 2
+        // n >= m >= 1, k >= 2
         int i = Math.min(m, k / 2);
         int j = Math.min(n, k / 2);
-        // Now we need to find only k-j th element
-        // since we have found out the lowest j
-        if (arr1[i - 1] > arr2[j - 1]) {
-            int temp[] = Arrays.copyOfRange(arr2, j, n);
-            return kth(arr1, m, temp, n - j, k - j);
+        if (A[i - 1] > B[j - 1]) {
+            // arr2[j - 1] at most rank k-1, can't be kth
+            int temp[] = Arrays.copyOfRange(B, j, n);
+            return kth(A, temp, k - j);
+        } else {
+            int temp[] = Arrays.copyOfRange(A, i, m);
+            return kth(temp, B, k - i);
         }
-
-        // Now we need to find only k-i th element
-        // since we have found out the lowest i
-        int temp[] = Arrays.copyOfRange(arr1, i, m);
-        return kth(temp, m - i, arr2, n, k - i);
     }
 
     /**
@@ -119,29 +117,6 @@ public class Solution000 {
             }
         }
         return s.substring(start, start + max);
-    }
-
-    /**
-     * 6. ZigZag Conversion
-     */
-    public String convert(String s, int nRows) {
-        char[] c = s.toCharArray();
-        int len = c.length;
-        StringBuilder[] sb = new StringBuilder[nRows];
-        for (int i = 0; i < sb.length; i++) {
-            sb[i] = new StringBuilder();
-        }
-        int i = 0;
-        while (i < len) {
-            for (int idx = 0; idx < nRows && i < len; idx++) // vertical down
-                sb[idx].append(c[i++]);
-            for (int idx = nRows - 2; idx >= 1 && i < len; idx--) // slide up
-                sb[idx].append(c[i++]);
-        }
-
-        for (int idx = 1; idx < sb.length; idx++)
-            sb[0].append(sb[idx]);
-        return sb[0].toString();
     }
 
     /**
@@ -364,7 +339,7 @@ public class Solution000 {
     /**
      * 27. Remove Element
      */
-    // [3,2,4,3] , 3 -> [4,2,3,3]
+    // [3,2,4,3], 3 -> [4,2,3,3]
     public int removeElement(int[] nums, int val) {
         int last = nums.length - 1;
         int cur = 0;
@@ -408,54 +383,52 @@ public class Solution000 {
 
     /**
      * 30. Substring with Concatenation of All Words
+     * 
+     * Find all starting indices that is a concatenation of each word in words exactly once
      */
-    public List<Integer> findSubstring(String S, String[] L) {
+    public List<Integer> findSubstring(String s, String[] words) {
         List<Integer> res = new ArrayList<>();
-        if (S == null || L == null || S.length() == 0 || L.length == 0)
+        if (s.length() == 0 || words.length == 0)
             return res;
-        int wordLen = L[0].length();
+        int len = words[0].length();
 
         Map<String, Integer> dict = new HashMap<>();
-        for (String word : L) {
+        for (String word : words) {
             dict.put(word, dict.getOrDefault(word, 0) + 1);
         }
 
-        for (int i = 0; i < wordLen; i++) {
+        for (int i = 0; i < len; i++) {
             int count = 0;
             int start = i;
-            Map<String, Integer> curdict = new HashMap<>();
-            // till the first letter of last word
-            for (int j = i; j <= S.length() - wordLen; j += wordLen) {
-                String curWord = S.substring(j, j + wordLen);
-                // check each word to tell if it existes in give dictionary
-                if (!dict.containsKey(curWord)) {
-                    curdict.clear();
+            Map<String, Integer> map = new HashMap<>();
+            for (int j = i; j <= s.length() - len; j += len) {
+                String cur = s.substring(j, j + len);
+                if (!dict.containsKey(cur)) {
+                    map.clear();
                     count = 0;
-                    start = j + wordLen;
+                    start = j + len;
                     continue;
                 }
-                // form current dictionary
-                curdict.put(curWord, curdict.getOrDefault(curWord, 0) + 1);
-                if (curdict.get(curWord) <= dict.get(curWord)) {
+
+                map.put(cur, map.getOrDefault(cur, 0) + 1);
+                if (map.get(cur) <= dict.get(cur)) {
                     count++;
                 } else {
-                    while (curdict.get(curWord) > dict.get(curWord)) {
-                        String tmp = S.substring(start, start + wordLen);
-                        curdict.put(tmp, curdict.get(tmp) - 1);
-                        if (curdict.get(tmp) < dict.get(tmp)) {
+                    while (map.get(cur) > dict.get(cur)) {
+                        String head = s.substring(start, start + len);
+                        map.put(head, map.get(head) - 1);
+                        if (map.get(head) < dict.get(head)) {
                             count--;
                         }
-                        start += wordLen;
+                        start += len;
                     }
                 }
 
-                // put into res and move index point to nextword
-                // and update current dictionary as well as count
-                if (count == L.length) {
+                if (count == words.length) {
                     res.add(start);
-                    String tmp = S.substring(start, start + wordLen);
-                    curdict.put(tmp, curdict.get(tmp) - 1);
-                    start = start + wordLen;
+                    String head = s.substring(start, start + len);
+                    map.put(head, map.get(head) - 1);
+                    start = start + len;
                     count--;
                 }
             }
@@ -835,17 +808,17 @@ public class Solution000 {
      * 46. Permutations DFS
      */
     public List<List<Integer>> permute(int[] nums) {
-        List<List<Integer>> res = new ArrayList<List<Integer>>();
+        List<List<Integer>> res = new ArrayList<>();
         if (nums == null || nums.length == 0) {
             return res;
         }
-        helper46(nums, new boolean[nums.length], new ArrayList<Integer>(), res);
+        helper46(nums, new boolean[nums.length], new ArrayList<>(), res);
         return res;
     }
 
     private void helper46(int[] nums, boolean[] used, List<Integer> item, List<List<Integer>> res) {
         if (item.size() == nums.length) {
-            res.add(new ArrayList<Integer>(item));
+            res.add(new ArrayList<>(item));
             return;
         }
         for (int i = 0; i < nums.length; i++) {
@@ -922,14 +895,14 @@ public class Solution000 {
      */
     public String getPermutation(int n, int k) {
         StringBuilder sb = new StringBuilder();
-        List<Integer> num = new ArrayList<Integer>();
+        List<Integer> num = new ArrayList<>();
         int fact = 1;
         for (int i = 1; i <= n; i++) {
             num.add(i);
             fact *= i;
         }
 
-        // n = 4, k = 23
+        // n = 4, k = 23, num = [1,2,3,4]
         // fact = 6, index = 3, cnt = 22 - 18 = 4
         // fact = 2, index = 2, cnt = 0
         // fact = 1, index = 0, cnt = 0
@@ -949,14 +922,14 @@ public class Solution000 {
      */
     // Given two integers n and k, return all possible combinations of k numbers out of 1 ... n.
     public List<List<Integer>> combine(int n, int k) {
-        List<List<Integer>> res = new ArrayList<List<Integer>>();
-        fn77(1, k, n, new ArrayList<Integer>(), res);
+        List<List<Integer>> res = new ArrayList<>();
+        fn77(1, k, n, new ArrayList<>(), res);
         return res;
     }
 
     void fn77(int start, int k, int n, ArrayList<Integer> item, List<List<Integer>> res) {
         if (k == 0) {
-            res.add(new ArrayList<Integer>(item));
+            res.add(new ArrayList<>(item));
             return;
         }
         for (int i = start; i <= n - k + 1; i++) {
@@ -1073,7 +1046,7 @@ public class Solution000 {
         Stack<Integer> idx = new Stack<>();
         idx.add(0);
         while (i < h.length) {
-            if (h[idx.peek()] <= h[i]) {
+            if (h[i] >= h[idx.peek()]) {
                 idx.push(i++);
             } else {
                 // i -> right bound, stack.peek() -> left bound, both lower than h[t]
@@ -1115,14 +1088,13 @@ public class Solution000 {
         largestRectangleArea(new int[] { 2, 1, 5, 6, 2, 3 });
     }
 
-    @SuppressWarnings("unused")
     // @Test
     public void test0() {
         int[] A = {};
         int[] B = { 2 };
         // List<List<Integer>> res = permute(A);
         // combine(6, 2);
-        System.out.println(kth(A, A.length, B, B.length, 1));
+        System.out.println(kth(A, B, 1));
 
     }
 }

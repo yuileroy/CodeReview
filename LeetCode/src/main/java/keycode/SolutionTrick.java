@@ -3,10 +3,12 @@ package keycode;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 
@@ -418,9 +420,85 @@ public class SolutionTrick {
         return result;
     }
 
+    public List<String> topKFrequent(String[] words, int k) {
+        Map<String, Integer> map = new HashMap<>();
+        for (String s : words) {
+            map.put(s, map.getOrDefault(s, 0) + 1);
+        }
+        PriorityQueue<String> pq = new PriorityQueue<>(
+                (a, b) -> map.get(a) == (int) map.get(b) ? b.compareTo(a) : map.get(a) - map.get(b));
+        for (String m : map.keySet()) {
+            pq.add(m);
+            if (pq.size() > k) {
+                pq.remove();
+            }
+        }
+        List<String> res = new ArrayList<>();
+        while (!pq.isEmpty())
+            res.add(pq.remove());
+        Collections.reverse(res);
+        return res;
+    }
+
+    // lower case char.
+    List<String> getLadder(String wordA, String wordB, Set<String> dict) {
+        Map<String, String> used = new HashMap<>();
+        Set<String> level = new HashSet<>();
+        Set<String> next = new HashSet<>();
+        level.add(wordA);
+        while (!level.isEmpty()) {
+            for (String s : level) {
+                char[] ch = s.toCharArray();
+                // cat
+                for (int i = 0; i < ch.length; i++) {
+                    char cur = ch[i];
+                    // []at, c[]t, ca[]
+                    for (char c = 'a'; c <= 'z'; c++) {
+                        if (c == cur) {
+                            continue;
+                        }
+                        ch[i] = c;
+                        String tmp = String.valueOf(ch);
+                        if (!used.containsKey(tmp) && dict.contains(tmp)) {
+                            next.add(tmp);
+                            used.put(tmp, s);
+                            // wordB found
+                            if (wordB.equals(tmp)) {
+                                return getList(wordA, wordB, used);
+                            }
+                        }
+                    }
+                    ch[i] = cur;
+                }
+            }
+            level = next;
+            next = new HashSet<>();
+        }
+        return new ArrayList<>();
+    }
+
+    List<String> getList(String wordA, String wordB, Map<String, String> used) {
+        List<String> res = new ArrayList<>();
+        res.add(wordB);
+        String pre = used.get(wordB);
+        while (!pre.equals(wordA)) {
+            res.add(pre);
+            pre = used.get(pre);
+        }
+        res.add(wordA);
+        Collections.reverse(res);
+        return res;
+    }
+
     @Test
     public void test() {
         System.out.println(maxRepOpt1V1("aaabbaaa"));
+        HashSet<String> set = new HashSet<>();
+        set.add("cat");
+        set.add("cbe");
+        set.add("cbt");
+        set.add("cad");
+        System.out.println(getLadder("cat", "cbe", set));
         // System.out.println(numRollsToTarget(2, 6, 7));
     }
 }
