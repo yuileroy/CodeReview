@@ -2,6 +2,7 @@ package keycode;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -59,7 +60,7 @@ public class Solution900 {
         return -1;
     }
 
-    int getValue(int[][] board, int num) {
+    private int getValue(int[][] board, int num) {
         int N = board.length;
         int i = N - 1 - (num - 1) / N, j = 0;
         boolean inc = (N - i) % 2 != 0;
@@ -95,7 +96,7 @@ public class Solution900 {
         return cells;
     }
 
-    int state(int[] cells) {
+    private int state(int[] cells) {
         int v = 0;
         for (int i = 0; i < cells.length; i++) {
             v += cells[i] << i;
@@ -103,7 +104,7 @@ public class Solution900 {
         return v;
     }
 
-    int[] change(int[] cells) {
+    private int[] change(int[] cells) {
         int[] res = new int[cells.length];
         for (int i = 1; i < cells.length - 1; i++) {
             if (cells[i - 1] == cells[i + 1]) {
@@ -125,7 +126,7 @@ public class Solution900 {
     }
 
     // res != -1 means distance above target, go up only
-    int getDistance(TreeNode root, TreeNode target, int K) {
+    private int getDistance(TreeNode root, TreeNode target, int K) {
         int res = -1;
         if (root == null) {
             return res;
@@ -154,7 +155,7 @@ public class Solution900 {
         return res;
     }
 
-    void addToList(TreeNode root, int cur, int k) {
+    private void addToList(TreeNode root, int cur, int k) {
         if (root == null) {
             return;
         }
@@ -181,7 +182,7 @@ public class Solution900 {
         return image;
     }
 
-    void dfs(int[][] image, int i, int j, int color, int newColor) {
+    private void dfs(int[][] image, int i, int j, int color, int newColor) {
         image[i][j] = newColor;
         for (int[] d : D) {
             int r = i + d[0], c = j + d[1];
@@ -379,7 +380,7 @@ public class Solution900 {
                 int left = s.indexOf('(');
                 String key = s.substring(left + 1, s.length() - 1);
                 if (!map.containsKey(key)) {
-                    map.put(key, new ArrayList<String>());
+                    map.put(key, new ArrayList<>());
                 }
                 map.get(key).add(values[0] + "/" + s.substring(left));
             }
@@ -393,6 +394,12 @@ public class Solution900 {
         return res;
     }
 
+    /**
+     * 536. Construct Binary Tree from String
+     * 
+     * You always start to construct the left child node of the parent first if it exists.
+     */
+    // "4(2(3)(1))(6(5))"
     public TreeNode str2tree(String s) {
         if (s.charAt(s.length() - 1) != ')') {
             return new TreeNode(Integer.parseInt(s));
@@ -409,7 +416,7 @@ public class Solution900 {
                     root.left = str2tree(s.substring(idx + 1, i));
                     if (i != s.length() - 1) {
                         root.right = str2tree(s.substring(i + 2, s.length() - 1));
-                        break; // need to break
+                        break; // need to break when cnt == 0
                     }
                 }
             }
@@ -417,7 +424,11 @@ public class Solution900 {
         return root;
     }
 
-    // 854
+    /**
+     * 854. K-Similar Strings
+     * 
+     * if we can swap the positions of two letters in A exactly K times so that the resulting string equals B.
+     */
     class Solution854 {
         int res = Integer.MAX_VALUE;
 
@@ -433,15 +444,16 @@ public class Solution900 {
         // if(s.charAt(j) == b.charAt(j) || s.charAt(i) != b.charAt(j)) continue;
 
         // dfs() with pre process
-        void dfs(char[] ch1, char[] ch2, int start, int step) {
+        private void dfs(char[] ch1, char[] ch2, int start, int step) {
             if (start == ch1.length) {
                 res = Math.min(res, step);
                 return;
             }
             if (ch1[start] == ch2[start]) {
-                // ! start++;
+                // ! start++; didn't call dfs()
                 dfs(ch1, ch2, start + 1, step);
             } else {
+                // can't use Map<char, index> because swap() changes them.
                 for (int idx = start + 1; idx < ch1.length; idx++) {
                     if (ch1[idx] == ch2[start]) {
                         swap(ch1, start, idx);
@@ -468,62 +480,46 @@ public class Solution900 {
             return count;
         }
 
-        // List<Integer>[] arrayA = new ArrayList[26];
-        // for (int i = 0; i < ch1.length; i++) {
-        // if (arrayA[ch1[i] - 'a'] == null) {
-        // arrayA[ch1[i] - 'a'] = new ArrayList<>();
-        // }
-        // arrayA[ch1[i] - 'a'].add(i);
-        // }
-        // void dfs(char[] ch1, char[] ch2, int start, int step) {
-        // if (start == ch1.length) {
-        // res = Math.min(res, step);
-        // return;
-        // }
-        // if (ch1[start] == ch2[start]) {
-        // start++; //! didn't call dfs()
-        // } else {
-        // for (int idx : arrayA[ch2[start] - 'a']) {
-        // if (idx > start) {
-        // swap(ch1, start, idx);
-        // dfs(ch1, ch2, start + 1, step + 1);
-        // swap(ch1, start, idx);
-        // }
-        // }
-        // }
-        // }
-
-        void swap(char[] c, int i, int j) {
+        private void swap(char[] c, int i, int j) {
             char t = c[i];
             c[i] = c[j];
             c[j] = t;
         }
     }
 
+    /**
+     * 743. Network Delay Time
+     */
+    // Given times, a list of travel times as directed edges times[i] = (u, v, w), where u is the source node, v is the
+    // target node, and w is the time it takes for a signal to travel from source to target.
+    // Now, we send a signal from a certain node K. How long will it take for all nodes to receive the signal? If it is
+    // impossible, return -1.
     public int networkDelayTime(int[][] times, int N, int K) {
-        Map<Integer, List<int[]>> map = new HashMap<>();
+        Map<Integer, List<int[]>> graph = new HashMap<>();
         for (int[] e : times) {
-            if (!map.containsKey(e[0]))
-                map.put(e[0], new ArrayList<>());
-            map.get(e[0]).add(new int[] { e[1], e[2] });
+            if (!graph.containsKey(e[0]))
+                graph.put(e[0], new ArrayList<>());
+            graph.get(e[0]).add(new int[] { e[1], e[2] });
         }
+        // pq <timeToK, node>
         PriorityQueue<int[]> pq = new PriorityQueue<int[]>((e1, e2) -> e1[0] - e2[0]);
         pq.add(new int[] { 0, K });
-
+        // result map <node, timeToK>
         Map<Integer, Integer> dist = new HashMap<>();
-
         while (!pq.isEmpty()) {
             int[] e = pq.remove();
             int len = e[0], u = e[1];
             if (dist.containsKey(u))
                 continue;
             dist.put(u, len);
-            if (map.containsKey(u))
-                for (int[] edge : map.get(u)) {
+            if (graph.containsKey(u)) {
+                for (int[] edge : graph.get(u)) {
                     int v = edge[0], len2 = edge[1];
-                    if (!dist.containsKey(v))
+                    if (!dist.containsKey(v)) {
                         pq.add(new int[] { len + len2, v });
+                    }
                 }
+            }
         }
 
         if (dist.size() != N)
@@ -532,6 +528,36 @@ public class Solution900 {
         for (int e : dist.values())
             res = Math.max(res, e);
         return res;
+    }
+
+    /**
+     * 935. Knight Dialer
+     */
+    public int knightDialer(int N) {
+        int[][] KEYS = new int[][] { { 4, 6 }, { 6, 8 }, { 7, 9 }, { 4, 8 }, { 3, 9, 0 }, {}, { 1, 7, 0 }, { 2, 6 },
+                { 1, 3 }, { 2, 4 } };
+
+        int mod = 1000000007;
+        if (N == 0) {
+            return 0;
+        }
+        int[][] dp = new int[2][10];
+        int now = 0;
+        Arrays.fill(dp[now], 1);
+        for (int i = 1; i < N; ++i) {
+            now = 1 - now;
+            Arrays.fill(dp[now], 0);
+            for (int j = 0; j <= 9; ++j) {
+                for (int k : KEYS[j]) {
+                    dp[now][k] = (dp[now][k] + dp[1 - now][j]) % mod;
+                }
+            }
+        }
+        int sum = 0;
+        for (int i = 0; i <= 9; ++i) {
+            sum = (sum + dp[now][i]) % mod;
+        }
+        return sum;
     }
 
     @Test
