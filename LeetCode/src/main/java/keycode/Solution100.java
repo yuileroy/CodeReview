@@ -18,23 +18,61 @@ public class Solution100 {
     /**
      * 114. Flatten Binary Tree to Linked List
      */
-    class Solution {
-        TreeNode pre = null;
+    TreeNode pre = null;
 
-        public void flatten(TreeNode root) {
-            if (root == null) {
-                return;
-            }
-            if (pre != null) {
-                pre.right = root;
-                pre.left = null;
-            }
-            pre = root;
-            // ! realright
-            TreeNode realright = root.right;
-            flatten(root.left);
-            flatten(realright);
+    public void flatten(TreeNode root) {
+        if (root == null) {
+            return;
         }
+        if (pre != null) {
+            pre.right = root;
+            pre.left = null;
+        }
+        pre = root;
+        // ! realright
+        TreeNode realright = root.right;
+        flatten(root.left);
+        flatten(realright);
+    }
+
+    /**
+     * 123. Best Time to Buy and Sell Stock III
+     */
+    public int maxProfit(int[] prices) {
+        if (prices == null || prices.length <= 1) {
+            return 0;
+        }
+        int buy1 = Integer.MIN_VALUE, buy2 = Integer.MIN_VALUE;
+        int sell1 = 0, sell2 = 0;
+        for (int p : prices) {
+            buy1 = Math.max(-p, buy1);
+            sell1 = Math.max(buy1 + p, sell1);
+            buy2 = Math.max(sell1 - p, buy2);
+            sell2 = Math.max(buy2 + p, sell2);
+        }
+        return sell2;
+    }
+
+    // V2 at most n transactions
+    public int maxProfitV2(int[] prices) {
+        if (prices == null || prices.length == 0) {
+            return 0;
+        }
+        int n = 2;
+        int max = 0, len = prices.length;
+        int[][] dp = new int[n + 1][len];
+        // i-th sell profit at price index j
+        for (int j = 1; j < len; j++) {
+            for (int i = 1; i <= n; i++) {
+                int cur = dp[i][j - 1];
+                for (int k = 0; k <= j; k++) {
+                    cur = Math.max(cur, dp[i - 1][k] + prices[j] - prices[k]);
+                }
+                max = Math.max(max, cur);
+                dp[i][j] = cur;
+            }
+        }
+        return max;
     }
 
     /**

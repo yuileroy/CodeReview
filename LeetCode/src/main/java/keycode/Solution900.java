@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 import org.junit.Test;
 
@@ -392,8 +393,156 @@ public class Solution900 {
         return res;
     }
 
+    public TreeNode str2tree(String s) {
+        if (s.charAt(s.length() - 1) != ')') {
+            return new TreeNode(Integer.parseInt(s));
+        }
+        int idx = s.indexOf('(');
+        TreeNode root = new TreeNode(Integer.parseInt(s.substring(0, idx)));
+        int cnt = 1;
+        for (int i = idx + 1; i < s.length(); i++) {
+            if (s.charAt(i) == '(') {
+                cnt++;
+            } else if (s.charAt(i) == ')') {
+                cnt--;
+                if (cnt == 0) {
+                    root.left = str2tree(s.substring(idx + 1, i));
+                    if (i != s.length() - 1) {
+                        root.right = str2tree(s.substring(i + 2, s.length() - 1));
+                        break; // need to break
+                    }
+                }
+            }
+        }
+        return root;
+    }
+
+    // 854
+    class Solution854 {
+        int res = Integer.MAX_VALUE;
+
+        public int kSimilarity(String A, String B) {
+            char[] ch1 = A.toCharArray();
+            char[] ch2 = B.toCharArray();
+            int pre = preProcess(ch1, ch2);
+            dfs(ch1, ch2, 0, 0);
+            return res + pre;
+        }
+
+        // bfs() is for each step get a list of String by swap() once
+        // if(s.charAt(j) == b.charAt(j) || s.charAt(i) != b.charAt(j)) continue;
+
+        // dfs() with pre process
+        void dfs(char[] ch1, char[] ch2, int start, int step) {
+            if (start == ch1.length) {
+                res = Math.min(res, step);
+                return;
+            }
+            if (ch1[start] == ch2[start]) {
+                // ! start++;
+                dfs(ch1, ch2, start + 1, step);
+            } else {
+                for (int idx = start + 1; idx < ch1.length; idx++) {
+                    if (ch1[idx] == ch2[start]) {
+                        swap(ch1, start, idx);
+                        dfs(ch1, ch2, start + 1, step + 1);
+                        swap(ch1, start, idx);
+                    }
+                }
+            }
+        }
+
+        private int preProcess(char[] arrA, char[] arrB) {
+            int count = 0;
+            for (int i = 0; i < arrA.length; ++i) {
+                if (arrA[i] != arrB[i]) {
+                    for (int j = i + 1; j < arrA.length; ++j) {
+                        if (arrA[i] == arrB[j] && arrA[j] == arrB[i]) {
+                            swap(arrA, i, j);
+                            count++;
+                            break;
+                        }
+                    }
+                }
+            }
+            return count;
+        }
+
+        // List<Integer>[] arrayA = new ArrayList[26];
+        // for (int i = 0; i < ch1.length; i++) {
+        // if (arrayA[ch1[i] - 'a'] == null) {
+        // arrayA[ch1[i] - 'a'] = new ArrayList<>();
+        // }
+        // arrayA[ch1[i] - 'a'].add(i);
+        // }
+        // void dfs(char[] ch1, char[] ch2, int start, int step) {
+        // if (start == ch1.length) {
+        // res = Math.min(res, step);
+        // return;
+        // }
+        // if (ch1[start] == ch2[start]) {
+        // start++; //! didn't call dfs()
+        // } else {
+        // for (int idx : arrayA[ch2[start] - 'a']) {
+        // if (idx > start) {
+        // swap(ch1, start, idx);
+        // dfs(ch1, ch2, start + 1, step + 1);
+        // swap(ch1, start, idx);
+        // }
+        // }
+        // }
+        // }
+
+        void swap(char[] c, int i, int j) {
+            char t = c[i];
+            c[i] = c[j];
+            c[j] = t;
+        }
+    }
+
+    public int networkDelayTime(int[][] times, int N, int K) {
+        Map<Integer, List<int[]>> map = new HashMap<>();
+        for (int[] e : times) {
+            if (!map.containsKey(e[0]))
+                map.put(e[0], new ArrayList<>());
+            map.get(e[0]).add(new int[] { e[1], e[2] });
+        }
+        PriorityQueue<int[]> pq = new PriorityQueue<int[]>((e1, e2) -> e1[0] - e2[0]);
+        pq.add(new int[] { 0, K });
+
+        Map<Integer, Integer> dist = new HashMap<>();
+
+        while (!pq.isEmpty()) {
+            int[] e = pq.remove();
+            int len = e[0], u = e[1];
+            if (dist.containsKey(u))
+                continue;
+            dist.put(u, len);
+            if (map.containsKey(u))
+                for (int[] edge : map.get(u)) {
+                    int v = edge[0], len2 = edge[1];
+                    if (!dist.containsKey(v))
+                        pq.add(new int[] { len + len2, v });
+                }
+        }
+
+        if (dist.size() != N)
+            return -1;
+        int res = 0;
+        for (int e : dist.values())
+            res = Math.max(res, e);
+        return res;
+    }
+
     @Test
     public void test() {
+        Solution854 sol = new Solution854();
+        sol.kSimilarity("bccaba", "abacbc");
+        "a".substring(1);
+    }
+
+    public void test0() {
+        str2tree("4(2(3)(1))(6(5))");
         mergeStones(new int[] { 1, 2, 3, 4, 5 }, 3);
         FileSystem fs = new FileSystem();
         fs.mkdir("/a/b");
