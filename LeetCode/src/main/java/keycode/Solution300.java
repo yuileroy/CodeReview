@@ -1,5 +1,6 @@
 package keycode;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,8 +56,10 @@ public class Solution300 {
     /**
      * 305. Number of Islands II
      * 
-     * count the number of islands after each addLand operation
      */
+    // A 2d grid map of m rows and n columns is initially filled with water. We may perform an addLand operation which
+    // turns the water at position (row, col) into a land. Given a list of positions to operate, count the number of
+    // islands after each addLand operation.
     public List<Integer> numIslands2(int m, int n, int[][] positions) {
 
         int[][] B = { { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 } };
@@ -191,7 +194,50 @@ public class Solution300 {
      * 
      * The graph contains n nodes which are labeled from 0 to n - 1
      */
-    public List<Integer> findMinHeightTrees(int n, int[][] edges) {
+    public List<Integer> findMinHeightTrees(final int n, final int[][] edges) {
+        if (n == 1) {
+            return Collections.singletonList(0);
+        }
+        @SuppressWarnings("unchecked")
+        List<Integer>[] graph = new ArrayList[n];
+        for (int i = 0; i < n; i++) {
+            graph[i] = new ArrayList<>();
+        }
+        for (int[] edge : edges) {
+            graph[edge[0]].add(edge[1]);
+            graph[edge[1]].add(edge[0]);
+        }
+
+        // topological
+        int[] degree = new int[n];
+        for (int i = 0; i < n; i++) {
+            degree[i] = graph[i].size();
+        }
+        Queue<Integer> queue = new ArrayDeque<>(n);
+        for (int i = 0; i < n; i++) {
+            if (degree[i] == 1) {
+                queue.add(i);
+            }
+        }
+
+        int count = n;
+        while (count > 2) {
+            int size = queue.size();
+            count -= size;
+            while (size-- > 0) {
+                int cur = queue.remove();
+                for (int next : graph[cur]) {
+                    degree[next]--;
+                    if (degree[next] == 1) {
+                        queue.add(next);
+                    }
+                }
+            }
+        }
+        return new ArrayList<>(queue);
+    }
+
+    public List<Integer> findMinHeightTreesV2(int n, int[][] edges) {
         List<Integer> result = new ArrayList<>();
         if (n == 1) {
             result.add(0);
@@ -245,7 +291,7 @@ public class Solution300 {
         return fn(1, n, nums, dp);
     }
 
-    public int fn(int i, int j, int[] nums, int[][] dp) {
+    private int fn(int i, int j, int[] nums, int[][] dp) {
         if (i > j) {
             return 0;
         }
@@ -284,7 +330,7 @@ public class Solution300 {
         return res[n - 1];
     }
 
-    public int findMin(int[] nums) {
+    private int findMin(int[] nums) {
         int min = nums[0];
         for (int i = 1; i < nums.length; i++) {
             min = Math.min(min, nums[i]);
@@ -348,28 +394,31 @@ public class Solution300 {
     }
 
     // V2
-    int insertIdx(List<Integer> sort, int value) {
-        if (sort.size() == 0) {
-            sort.add(value);
+    int insertIdx(List<Integer> list, int value) {
+        if (list.size() == 0) {
+            list.add(value);
             return 0;
         }
-        int l = 0, r = sort.size() - 1;
+        int l = 0, r = list.size() - 1;
         while (l < r) {
             int m = l + (r - l) / 2;
-            if (sort.get(m) >= value) {
+            if (list.get(m) >= value) {
                 r = m;
             } else {
                 l = m + 1;
             }
         }
-        int idx = sort.get(l) < value ? l + 1 : l;
-        sort.add(idx, value);
+        int idx = list.get(l) < value ? l + 1 : l;
+        list.add(idx, value);
         return idx;
     }
 
     /**
      * 316. Remove Duplicate Letters
      */
+    // Given a string which contains only lowercase letters, remove duplicate letters so that every letter appears once
+    // and only once. You must make sure your result is the smallest in lexicographical order among all possible
+    // results.
     public String removeDuplicateLetters(String s) {
         int[] count = new int[128];
         for (int i = 0; i < s.length(); i++) {
@@ -410,7 +459,7 @@ public class Solution300 {
         return res;
     }
 
-    void dfs(int start, String item, String word, List<String> res) {
+    private void dfs(int start, String item, String word, List<String> res) {
         if (start >= word.length()) {
             res.add(item);
             return;
@@ -457,7 +506,7 @@ public class Solution300 {
 
     // nums1 = [9, 8], num2 = [9, 8, 3] -> false
     // nums1 = [6, 7], num2 = [6, 0, 4] -> true
-    boolean greater(int[] nums1, int i, int[] nums2, int j) {
+    private boolean greater(int[] nums1, int i, int[] nums2, int j) {
         while (i < nums1.length && j < nums2.length && nums1[i] == nums2[j]) {
             i++;
             j++;
@@ -467,12 +516,12 @@ public class Solution300 {
 
     // find largest k sequence, acted as stack, Compare 300. Longest Increasing Subsequence
     // nums = [4, 5, 3, 9], k = 2 -> [5, 9]
-    int[] largestDigits(int[] nums, int k) {
+    private int[] largestDigits(int[] nums, int k) {
         int[] res = new int[k];
         if (k == 0) {
             return res;
         }
-        int cnt = 0;
+        int cnt = 0; // count of selected digits
         for (int i = 0; i < nums.length; i++) {
             while (cnt > 0 && cnt + nums.length - i > k && nums[i] > res[cnt - 1]) {
                 cnt--;
@@ -525,7 +574,7 @@ public class Solution300 {
         }
 
         // [A, B] [A, C] [C, A]
-        public void dfs(String cur) {
+        private void dfs(String cur) {
             // use while, run again means previous run didn't traverse every flight
             while (map.containsKey(cur) && !map.get(cur).isEmpty()) {
                 dfs(map.get(cur).remove());
@@ -646,6 +695,10 @@ public class Solution300 {
 
     /**
      * 347. Top K Frequent Elements
+     * 
+     * Given a non-empty array of integers, return the k most frequent elements.
+     * 
+     * Your algorithm's time complexity must be better than O(n log n)
      */
     public List<Integer> topKFrequent(int[] nums, int k) {
         @SuppressWarnings("unchecked")
@@ -678,6 +731,8 @@ public class Solution300 {
     /**
      * 352. Data Stream as Disjoint Intervals
      */
+    // Given a data stream input of non-negative integers a1, a2, ..., an, ..., summarize the numbers seen so far as a
+    // list of disjoint intervals.
     class SummaryRanges {
         TreeMap<Integer, int[]> tree;
 
@@ -730,6 +785,9 @@ public class Solution300 {
                     return env1[0] - env2[0];
             }
         });
+        // [5,4],[6,7],[6,5],[6,4],[7,6] ->
+        // [5,4] -> [5,4],[6,7] -> [5,4],[6,5] ->[5,4],[6,5],[7,6]
+        // store height
         int[] A = new int[envelopes.length];
         int cnt = 0;
         for (int[] envelope : envelopes) {
@@ -742,6 +800,8 @@ public class Solution300 {
                     right = mid;
                 }
             }
+            // all height before left is less than envelope[1]
+            // decrease A[left] if exists, or it is added
             A[left] = envelope[1];
             if (left == cnt) {
                 // height > last one's, insert at idx left
@@ -923,18 +983,18 @@ public class Solution300 {
         int[] pre = new int[nums.length];
         int max = 1;
         int maxIndex = 0;
-        for (int i = 0; i < nums.length; i++) {
-            DP[i] = 1;
-            pre[i] = -1;
-            for (int j = 0; j < i; j++) {
-                if (nums[i] % nums[j] == 0) {
-                    if (DP[j] + 1 > DP[i]) {
-                        DP[i] = DP[j] + 1;
-                        pre[i] = j;
+        for (int j = 0; j < nums.length; j++) {
+            DP[j] = 1;
+            pre[j] = -1;
+            for (int i = 0; i < j; i++) {
+                if (nums[j] % nums[i] == 0) {
+                    if (DP[i] + 1 > DP[j]) {
+                        DP[j] = DP[i] + 1;
+                        pre[j] = i;
                     }
-                    if (DP[i] > max) {
-                        max = DP[i];
-                        maxIndex = i;
+                    if (DP[j] > max) {
+                        max = DP[j];
+                        maxIndex = j;
                     }
                 }
             }
@@ -1002,6 +1062,8 @@ public class Solution300 {
 
     /**
      * 376. Wiggle Subsequence
+     * 
+     * Given a sequence of integers, return the length of the longest subsequence that is a wiggle sequence.
      */
     public int wiggleMaxLength(int[] nums) {
         if (nums.length == 0) {
@@ -1128,6 +1190,11 @@ public class Solution300 {
         return res;
     }
 
+    /**
+     * 386. Lexicographical Numbers
+     * 
+     * For example, given 12, return: [1,10,11,12,2,3,4,5,6,7,8,9].
+     */
     public List<Integer> lexicalOrder(int n) {
         List<Integer> res = new ArrayList<>();
         // need to start from 1, can't use dfs(res, 0, n)
@@ -1174,6 +1241,9 @@ public class Solution300 {
         return res;
     }
 
+    /**
+     * 390. Elimination Game
+     */
     public int lastRemaining(int n) {
         boolean left = true;
         int remaining = n;
@@ -1234,10 +1304,7 @@ public class Solution300 {
         Map<String, Double> valMap = new HashMap<>();
 
         public double[] calcEquation(List<List<String>> equations, double[] values, List<List<String>> queries) {
-            if (equations == null || equations.size() == 0) {
-                return new double[] {};
-            }
-
+            // union find
             for (int i = 0; i < equations.size(); i++) {
                 String x1 = equations.get(i).get(0), x2 = equations.get(i).get(1);
                 rootMap.putIfAbsent(x1, x1);
@@ -1259,8 +1326,9 @@ public class Solution300 {
                     continue;
                 String r1 = find(x1);
                 String r2 = find(x2);
-                if (r1.equals(r2))
-                    res[i] = get(x2) / get(x1);
+                if (r1.equals(r2)) {
+                    res[i] = getValue(x2) / getValue(x1);
+                }
             }
             return res;
         }
@@ -1281,13 +1349,13 @@ public class Solution300 {
         // { { "a", "b" }, { "c", "d" }, { "b", "d" } }, { 2.0, 3.0, 5.0 }
         // {a=a, b=a, c=a, d=c}
         // {a=1.0, b=2.0, c=3.3333333333333335, d=3.0}
-        private double get(String item) {
+        private double getValue(String item) {
             double res = valMap.get(item);
             String r = rootMap.get(item);
             if (r.equals(item)) {
                 return res;
             }
-            return res * get(r);
+            return res * getValue(r);
         }
     }
 
@@ -1295,7 +1363,6 @@ public class Solution300 {
         public double[] calcEquation(String[][] equations, double[] values, String[][] queries) {
             Map<String, Map<String, Double>> graph = new HashMap<>();
             for (int i = 0; i < equations.length; i++) {
-                // add arcs for both directions
                 addArc(graph, equations[i][0], equations[i][1], values[i]);
                 addArc(graph, equations[i][1], equations[i][0], 1 / values[i]);
             }
@@ -1309,7 +1376,7 @@ public class Solution300 {
 
         public void addArc(Map<String, Map<String, Double>> graph, String vexStart, String vexEnd, double value) {
             if (!graph.containsKey(vexStart)) {
-                graph.put(vexStart, new HashMap<String, Double>());
+                graph.put(vexStart, new HashMap<>());
             }
             Map<String, Double> arcMap = graph.get(vexStart);
             arcMap.put(vexEnd, value);
@@ -1319,15 +1386,9 @@ public class Solution300 {
             if (graph.get(vexStart) == null || graph.get(vexEnd) == null) {
                 return -1;
             }
-            // queue uesd for bfs
             Queue<String> queue = new LinkedList<>();
-            // distance from vexStart
             Map<String, Double> value = new HashMap<>();
-            // check if the vertex has been in the queue
-            Set<String> visited = new HashSet<>();
-            // init
             queue.add(vexStart);
-            visited.add(vexStart);
             value.put(vexStart, 1.0);
 
             String currentNode, nextNode;
@@ -1338,9 +1399,8 @@ public class Solution300 {
                     value.put(nextNode, value.get(currentNode) * arc.getValue());
                     if (nextNode.equals(vexEnd)) {
                         return value.get(vexEnd);
-                    } else if (!visited.contains(nextNode)) {
+                    } else if (!value.containsKey(nextNode)) {
                         queue.add(nextNode);
-                        visited.add(nextNode);
                     }
                 }
             }

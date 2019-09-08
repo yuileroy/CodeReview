@@ -22,6 +22,7 @@ public class Solution500 {
      */
     public boolean checkSubarraySum(int[] nums, int k) {
         Map<Integer, Integer> map = new HashMap<>();
+        // put(0, -1), for range check
         map.put(0, -1);
         int sum = 0;
         for (int i = 0; i < nums.length; i++) {
@@ -309,6 +310,8 @@ public class Solution500 {
             leaves(root.right);
         }
     }
+
+
 
     @Test
     public void test() {

@@ -264,6 +264,43 @@ public class Solution400 {
         return res;
     }
 
+    /**
+     * 498. Diagonal Traverse
+     */
+    public int[] findDiagonalOrder(int[][] matrix) {
+        int row = matrix.length;
+        if (row == 0)
+            return (new int[0]); // if empty matrix
+        int col = matrix[0].length;
+        int[] ans = new int[row * col];
+        int index = 0;
+        int i = 0, j = 0;
+
+        while (i < row && j < col) {
+            while (i >= 0 && j < col) { // moving up
+                ans[index++] = matrix[i][j];
+                i--;
+                j++;
+            }
+            i++;
+            if (j == col) { // reach beyond column
+                i++;
+                j--;
+            }
+            while (j >= 0 && i < row) { // moving down
+                ans[index++] = matrix[i][j];
+                i++;
+                j--;
+            }
+            j++;
+            if (i == row) { // reach beyond row
+                i--;
+                j++;
+            }
+        }
+        return ans;
+    }
+
     @Test
     public void test() {
         // System.out.println(maxNumber(new int[] { 3, 4, 6, 5 }, new int[] { 9, 1, 2, 5, 8, 3 }, 5));

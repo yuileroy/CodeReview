@@ -542,22 +542,163 @@ public class Solution900 {
             return 0;
         }
         int[][] dp = new int[2][10];
-        int now = 0;
-        Arrays.fill(dp[now], 1);
-        for (int i = 1; i < N; ++i) {
-            now = 1 - now;
-            Arrays.fill(dp[now], 0);
-            for (int j = 0; j <= 9; ++j) {
+        int cur = 0;
+        Arrays.fill(dp[cur], 1);
+        for (int i = 1; i < N; i++) {
+            cur = 1 - cur;
+            Arrays.fill(dp[cur], 0);
+            for (int j = 0; j <= 9; j++) {
                 for (int k : KEYS[j]) {
-                    dp[now][k] = (dp[now][k] + dp[1 - now][j]) % mod;
+                    dp[cur][k] = (dp[cur][k] + dp[1 - cur][j]) % mod;
                 }
             }
         }
         int sum = 0;
         for (int i = 0; i <= 9; ++i) {
-            sum = (sum + dp[now][i]) % mod;
+            sum = (sum + dp[cur][i]) % mod;
         }
         return sum;
+    }
+
+    /**
+     * 973. K Closest Points to Origin
+     */
+    public int[][] kClosest(int[][] points, int K) {
+        int len = points.length, l = 0, r = len - 1;
+        while (l < r) {
+            int mid = quickSort(points, l, r);
+            if (mid == K)
+                break;
+            if (mid < K) {
+                l = mid + 1;
+            } else {
+                r = mid - 1;
+            }
+        }
+        return Arrays.copyOfRange(points, 0, K);
+    }
+
+    // remember it! O(N) since don't need to sort
+    private int quickSort(int[][] points, int l, int r) {
+        int[] pivot = points[l];
+        while (l < r) {
+            while (l < r && compare(points[r], pivot) >= 0) {
+                r--;
+            }
+            points[l] = points[r];
+            while (l < r && compare(points[l], pivot) <= 0) {
+                l++;
+            }
+            points[r] = points[l];
+        }
+        points[l] = pivot;
+        return l;
+    }
+
+    private int compare(int[] p1, int[] p2) {
+        return p1[0] * p1[0] + p1[1] * p1[1] - p2[0] * p2[0] - p2[1] * p2[1];
+    }
+
+    /**
+     * 785. Is Graph Bipartite?
+     */
+    public boolean isBipartite(int[][] graph) {
+        boolean[] visited = new boolean[graph.length];
+        boolean[] color = new boolean[graph.length];
+
+        ArrayDeque<Integer> queue = new ArrayDeque<>();
+        for (int i = 0; i < graph.length; i++) {
+            if (graph[i].length == 0 || visited[i]) {
+                continue; // check graph[i].length == 0
+            }
+            queue.add(i);
+            visited[i] = true;
+            color[i] = true;
+            while (!queue.isEmpty()) {
+                int u = queue.remove();
+                for (int v : graph[u]) {
+                    if (visited[v]) {
+                        if (color[v] == color[u]) {
+                            return false;
+                        }
+                    } else {
+                        queue.add(v);
+                        visited[v] = true;
+                        color[v] = !color[u];
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 691. Stickers to Spell Word
+     * 
+     * spell out the given target string by cutting individual letters from your collection of stickers
+     */
+    public int minStickers(String[] stickers, String target) {
+        HashMap<String, Integer> map = new HashMap<>();
+        int[][] chars = new int[stickers.length][26];
+        for (int i = 0; i < stickers.length; i++) {
+            for (char c : stickers[i].toCharArray()) {
+                chars[i][c - 'a']++;
+            }
+        }
+        map.put("", 0);
+        return helper(chars, map, target);
+    }
+
+    private int helper(int[][] chars, HashMap<String, Integer> map, String target) {
+        if (map.containsKey(target))
+            return map.get(target);
+        int min = Integer.MAX_VALUE;
+        int[] tar = new int[26];
+        for (char c : target.toCharArray()) {
+            tar[c - 'a']++;
+        }
+        for (int i = 0; i < chars.length; i++) {
+            if (chars[i][target.charAt(0) - 'a'] == 0)
+                continue;
+            StringBuilder sb = new StringBuilder();
+            for (int j = 0; j < 26; j++) {
+                if (tar[j] > 0) {
+                    for (int k = 0; k < Math.max(0, tar[j] - chars[i][j]); k++) {
+                        sb.append((char) ('a' + j));
+                    }
+                }
+            }
+            String s = sb.toString();
+            int tmp = helper(chars, map, s);
+            if (tmp != -1) {
+                min = Math.min(min, tmp + 1);
+            }
+        }
+        map.put(target, min == Integer.MAX_VALUE ? -1 : min);
+        return map.get(target);
+    }
+
+    /**
+     * 670. Maximum Swap
+     */
+    public int maximumSwap(int num) {
+        char[] ch = String.valueOf(num).toCharArray();
+        int[] D = new int[10];
+        for (int i = 0; i < ch.length; i++) {
+            D[ch[i] - '0'] = i;
+        }
+        // find an larger index with value 9 to ch[i]
+        for (int i = 0; i < ch.length; i++) {
+            for (int k = 9; k > ch[i] - '0'; k--) {
+                if (D[k] > i) {
+                    char tmp = ch[i];
+                    ch[i] = ch[D[k]];
+                    ch[D[k]] = tmp;
+                    return Integer.parseInt(String.valueOf(ch));
+                }
+            }
+        }
+        return num;
     }
 
     @Test
