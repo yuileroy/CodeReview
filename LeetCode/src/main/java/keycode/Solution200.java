@@ -6,9 +6,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
 
@@ -489,6 +493,7 @@ public class Solution200 {
         }
         TreeNode leftN = lowestCommonAncestor(root.left, p, q);
         TreeNode rightN = lowestCommonAncestor(root.right, p, q);
+        // both null return null
         if (leftN != null && rightN != null) {
             return root;
         } else if (leftN == null) {
@@ -746,6 +751,95 @@ public class Solution200 {
      * @ 269. Alien Dictionary
      */
 
+    public String alienOrder(String[] words) {
+        @SuppressWarnings("unchecked")
+        Set<Integer>[] adj = new HashSet[26];
+        for (int i = 0; i < 26; i++) {
+            adj[i] = new HashSet<>();
+        }
+        int[] degree = new int[26];
+        Arrays.fill(degree, -1);
+
+        for (int i = 0; i < words.length; i++) {
+            for (char c : words[i].toCharArray()) {
+                if (degree[c - 'a'] < 0) {
+                    degree[c - 'a'] = 0;
+                }
+            }
+            if (i > 0) {
+                String w1 = words[i - 1], w2 = words[i];
+                int len = Math.min(w1.length(), w2.length());
+                for (int j = 0; j < len; j++) {
+                    int c1 = w1.charAt(j) - 'a', c2 = w2.charAt(j) - 'a';
+                    if (c1 != c2) {
+                        if (!adj[c1].contains(c2)) {
+                            adj[c1].add(c2);
+                            degree[c2]++;
+                        }
+                        break;
+                    }
+                    // "abcd"->"ab"
+                    if (j == w2.length() - 1 && w1.length() > w2.length()) {
+                        return "";
+                    }
+                }
+            }
+        }
+
+        Queue<Integer> q = new ArrayDeque<>();
+        for (int i = 0; i < degree.length; i++) {
+            if (degree[i] == 0) {
+                q.add(i);
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        while (!q.isEmpty()) {
+            int i = q.remove();
+            sb.append((char) ('a' + i));
+            for (int j : adj[i]) {
+                degree[j]--;
+                if (degree[j] == 0) {
+                    q.add(j);
+                }
+            }
+        }
+        for (int d : degree) {
+            if (d > 0) {
+                return "";
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 272. Closest Binary Search Tree Value II
+     */
+    public List<Integer> closestKValues(TreeNode root, double target, int k) {
+        List<Integer> res = new LinkedList<>();
+        boolean[] found = new boolean[1];
+        helper(root, target, k, res, found);
+        return res;
+    }
+
+    private void helper(TreeNode root, double target, int k, List<Integer> res, boolean[] found) {
+        if (root == null || found[0]) {
+            return;
+        }
+        helper(root.left, target, k, res, found);
+        if (res.size() == k) {
+            if (Math.abs(root.val - target) < Math.abs(res.get(0) - target)) {
+                res.remove(0);
+                res.add(root.val);
+            } else {
+                found[0] = true;
+                return;
+            }
+        } else {
+            res.add(root.val);
+        }
+        helper(root.right, target, k, res, found);
+    }
+
     /**
      * 275. H-Index II
      */
@@ -779,6 +873,9 @@ public class Solution200 {
         return l <= citations[citations.length - l] ? l : l - 1;
     }
 
+    /**
+     * 282. Expression Add Operators
+     */
     public List<String> addOperators(String num, int target) {
         List<String> list = new ArrayList<String>();
         fn(list, num, target, new StringBuilder(), 0, 0, 0);
@@ -817,6 +914,46 @@ public class Solution200 {
                 sb.setLength(len);
             }
         }
+    }
+
+    /**
+     * 285. Inorder Successor in BST
+     */
+    public TreeNode inorderSuccessor(TreeNode root, TreeNode p) {
+        TreeNode res = null, cur = root;
+        while (cur != null) {
+            if (cur.val <= p.val) {
+                cur = cur.right;
+            } else {
+                res = cur;
+                cur = cur.left;
+            }
+        }
+        return res;
+    }
+
+    // V2
+    TreeNode pre = null, res285 = null;
+
+    public TreeNode inorderSuccessorV2(TreeNode root, TreeNode p) {
+        if (root == null) {
+            return null;
+        }
+        inOrder(root, p);
+        return res285;
+    }
+
+    private void inOrder(TreeNode root, TreeNode p) {
+        if (root == null) {
+            return;
+        }
+        inOrder(root.right, p);
+        if (root == p) {
+            res285 = pre;
+            return;
+        }
+        pre = root;
+        inOrder(root.left, p);
     }
 
     @Test
