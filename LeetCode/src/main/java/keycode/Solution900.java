@@ -701,8 +701,64 @@ public class Solution900 {
         return num;
     }
 
+    /**
+     * 736. Parse Lisp Expression
+     */
+    public int evaluate(String expression) {
+        return eval(expression, new HashMap<String, Integer>());
+    }
+
+    private int eval(String expression, Map<String, Integer> parent) {
+        if (expression.charAt(0) != '(') {
+            if ((expression.charAt(0) >= '0' && expression.charAt(0) <= '9') || expression.charAt(0) == '-') {
+                return Integer.parseInt(expression);
+            }
+            return parent.get(expression);
+        }
+        // expression = (*, if add, elseif mult, else let
+        Map<String, Integer> scope = new HashMap<>();
+        scope.putAll(parent);
+        List<String> list = parse(expression.substring(expression.charAt(1) == 'm' ? 6 : 5, expression.length() - 1));
+        if (expression.charAt(1) == 'a') {
+            return eval(list.get(0), scope) + eval(list.get(1), scope);
+        } else if (expression.charAt(1) == 'm') {
+            return eval(list.get(0), scope) * eval(list.get(1), scope);
+        } else {
+            for (int i = 0; i < list.size() - 2; i += 2) {
+                scope.put(list.get(i), eval(list.get(i + 1), scope));
+            }
+            return eval(list.get(list.size() - 1), scope);
+        }
+    }
+
+    // add, mult : 2 parts, let : 2n parts
+    private List<String> parse(String expression) {
+        List<String> result = new ArrayList<>();
+        int par = 0;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < expression.length(); i++) {
+            if (expression.charAt(i) == '(') {
+                par--;
+            }
+            if (expression.charAt(i) == ')') {
+                par++;
+            }
+            if (expression.charAt(i) == ' ' && par == 0) {
+                result.add(sb.toString());
+                sb = new StringBuilder();
+            } else {
+                sb.append(expression.charAt(i));
+            }
+        }
+        if (sb.length() > 0) {
+            result.add(sb.toString());
+        }
+        return result;
+    }
+
     @Test
     public void test() {
+        evaluate("(mult 3 (add 2 3))");
         Solution854 sol = new Solution854();
         sol.kSimilarity("bccaba", "abacbc");
         "a".substring(1);
