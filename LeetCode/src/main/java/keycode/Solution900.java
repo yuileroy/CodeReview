@@ -503,49 +503,6 @@ public class Solution900 {
     }
 
     /**
-     * 743. Network Delay Time
-     */
-    // Given times, a list of travel times as directed edges times[i] = (u, v, w), where u is the source node, v is the
-    // target node, and w is the time it takes for a signal to travel from source to target.
-    // Now, we send a signal from a certain node K. How long will it take for all nodes to receive the signal? If it is
-    // impossible, return -1.
-    public int networkDelayTime(int[][] times, int N, int K) {
-        Map<Integer, List<int[]>> graph = new HashMap<>();
-        for (int[] e : times) {
-            if (!graph.containsKey(e[0]))
-                graph.put(e[0], new ArrayList<>());
-            graph.get(e[0]).add(new int[] { e[1], e[2] });
-        }
-        // pq <timeToK, node>
-        PriorityQueue<int[]> pq = new PriorityQueue<int[]>((e1, e2) -> e1[0] - e2[0]);
-        pq.add(new int[] { 0, K });
-        // result map <node, timeToK>
-        Map<Integer, Integer> dist = new HashMap<>();
-        while (!pq.isEmpty()) {
-            int[] e = pq.remove();
-            int len = e[0], u = e[1];
-            if (dist.containsKey(u))
-                continue;
-            dist.put(u, len);
-            if (graph.containsKey(u)) {
-                for (int[] edge : graph.get(u)) {
-                    int v = edge[0], len2 = edge[1];
-                    if (!dist.containsKey(v)) {
-                        pq.add(new int[] { len + len2, v });
-                    }
-                }
-            }
-        }
-
-        if (dist.size() != N)
-            return -1;
-        int res = 0;
-        for (int e : dist.values())
-            res = Math.max(res, e);
-        return res;
-    }
-
-    /**
      * 935. Knight Dialer
      */
     public int knightDialer(int N) {
@@ -718,6 +675,7 @@ public class Solution900 {
 
     @Test
     public void test() {
+
         Solution854 sol = new Solution854();
         sol.kSimilarity("bccaba", "abacbc");
         "a".substring(1);

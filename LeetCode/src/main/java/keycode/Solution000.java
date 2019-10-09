@@ -977,16 +977,16 @@ public class Solution000 {
 
     /**
      * 81. Search in Rotated Sorted Array II
+     * 
+     * @See 154
      */
     public boolean search(int[] A, int target) {
-        int left = 0;
-        int right = A.length - 1;
-        while (left <= right) {
+        int left = 0, right = A.length - 1;
+        while (left < right) {
             int mid = left + (right - left) / 2;
             if (A[mid] == target) {
                 return true;
             }
-
             // left sorted
             if (A[left] < A[mid] || A[right] < A[mid]) {
                 if (A[left] <= target && target < A[mid]) {

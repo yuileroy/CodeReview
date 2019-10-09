@@ -2,7 +2,9 @@ package keycode;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,6 +13,10 @@ import org.junit.Test;
 public class CompileCode {
 
     public int canCompleteCircuit(int[] gas, int[] cost) {
+
+        Stack<Integer> s = new Stack<>();
+        s.pop();
+
         int gasTotal = 0;
         int costTotal = 0;
         for (int i = 0; i < gas.length; i++) {
@@ -124,43 +130,57 @@ public class CompileCode {
         return res;
     }
 
-    public double findMedianSortedArrays(int[] nums1, int[] nums2) {
-        int m = nums1.length;
-        int n = nums2.length;
-        int mid = (m + n) / 2;
-        if ((m + n) % 2 == 0) {
-            return 0.5 * (kth(nums1, 0, nums2, 0, mid) + kth(nums1, 0, nums2, 0, mid + 1));
+    class PStack {
+        private LinkedList<Integer> list = new LinkedList<>();
+        private int size = 0;
+
+        PStack() {
+
         }
-        return (double) kth(nums1, 0, nums2, 0, mid + 1);
-    }
 
-    int kth(int arr1[], int start1, int arr2[], int start2, int k) {
-        System.out.println(" start1: " + start1 + " start2: " + start2 + " k: " + k);
-        int m = arr1.length - start1, n = arr2.length - start2;
-        if (m > n)
-            return kth(arr2, start2, arr1, start1, k);
-        if (m == 0)
-            return arr2[k - 1 + start2];
-        if (k == 1)
-            return Math.min(arr1[start1], arr2[start2]);
+        PStack(LinkedList<Integer> list, int size) {
+            this.list = list;
+            this.size = size;
+        }
 
-        // divide and conquer, n >= m >= 1, k >= 2
-        int i = Math.min(m, k / 2);
-        int j = Math.min(n, k / 2);
+        public int size() {
+            return size;
+        }
 
-        if (arr1[i - 1 + start1] > arr2[j - 1 + start2]) {
-            // remove first j elements from arr2 by update start2
-            return kth(arr1, start1, arr2, start2 + j, k - j);
-        } else {
-            return kth(arr1, start1 + i, arr2, start2, k - i);
+        public PStack push(int x) {
+            list.add(x);
+            return new PStack(list, size + 1);
+        }
+
+        public PStack pop() {
+            peek();
+            return new PStack(list, size - 1);
+        }
+
+        public PStack peek() {
+            if (size == 0) {
+                throw new RuntimeException("empty stack");
+            }
+            return this;
+        }
+
+        public String toString() {
+            if (size == 0) {
+                return "[]";
+            }
+            StringBuilder sb = new StringBuilder("[");
+            for (int i = 0; i < size; i++) {
+                sb.append(list.get(i)).append(", ");
+            }
+            sb.setLength(sb.length() - 2);
+            sb.append("]");
+            return sb.toString();
         }
     }
 
     @Test
     public void test() {
-        int[] A = { 1 };
-        int[] B = { 2, 3, 4, 5, 6 };
-        findMedianSortedArrays(A, B);
+
         System.out.println(perfectSub("1102021222", 2));
         // System.out.println(convert("15-million-1-hundred-15-thousand-20-1"));
         reverse("abc abs, abd! ddd");
@@ -177,5 +197,14 @@ public class CompileCode {
             System.out.format("I found the text" + " \"%s\" starting at " + "index %d and ending at index %d.%n",
                     matcher.group(), matcher.start(), matcher.end());
         }
+
+        PStack P0 = new PStack();
+        PStack P1 = P0.push(1);
+        PStack P2 = P1.push(2);
+        PStack P3 = P2.pop();
+        System.out.println(P1);
+        System.out.println(P2);
+        System.out.println(P3);
+
     }
 }
