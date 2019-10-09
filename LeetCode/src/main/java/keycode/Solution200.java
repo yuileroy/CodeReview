@@ -499,6 +499,29 @@ public class Solution200 {
     }
 
     /**
+     * Find distance between two nodes of a Binary Tree (236)
+     */
+    public int lowest(TreeNode root, TreeNode p, TreeNode q) {
+        if (root == null) {
+            return -1;
+        }
+        int leftN = lowest(root.left, p, q);
+        int rightN = lowest(root.right, p, q);
+        if (root == p || root == q) {
+            return leftN == -1 ? rightN + 1 : leftN + 1;
+        }
+        if (leftN != -1 && rightN != -1) {
+            return leftN + rightN + 2;
+        } else if (leftN == -1 && rightN == -1) {
+            return -1;
+        } else if (leftN != -1) {
+            return leftN + 1;
+        } else {
+            return rightN + 1;
+        }
+    }
+
+    /**
      * 239. Sliding Window Maximum
      */
     public int[] maxSlidingWindow(int[] nums, int k) {

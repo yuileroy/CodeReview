@@ -12,7 +12,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class SimpleConcurrentMap<K, V> implements Map<K, V> {
-    ConcurrentHashMap<K, V> c;
+    ConcurrentHashMap<K, V> c; // unused
     final ReadWriteLock lock = new ReentrantReadWriteLock();
     final Lock r = lock.readLock();
     final Lock w = lock.writeLock();
@@ -61,7 +61,7 @@ public class SimpleConcurrentMap<K, V> implements Map<K, V> {
     public Set<Map.Entry<K, V>> entrySet() {
         r.lock();
         try {
-            return new HashSet<Map.Entry<K, V>>(map.entrySet());
+            return new HashSet<>(map.entrySet());
         } finally {
             r.unlock();
         }

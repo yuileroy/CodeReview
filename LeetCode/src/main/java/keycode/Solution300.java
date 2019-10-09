@@ -1288,12 +1288,53 @@ public class Solution300 {
         return cur;
     }
 
-    String dup(int val, String s) {
+    private String dup(int val, String s) {
         StringBuilder sb = new StringBuilder();
         while (val-- > 0) {
             sb.append(s);
         }
         return sb.toString();
+    }
+
+    /**
+     * 395. Longest Substring with At Least K Repeating Characters
+     */
+    public int longestSubstring(String s, int k) {
+        if (s == null || s.isEmpty()) {
+            return 0;
+        }
+        int n = s.length();
+        if (k <= 1) {
+            return n;
+        }
+        int counter[] = new int[26];
+        boolean valid[] = new boolean[26];
+
+        char ss[] = s.toCharArray();
+        for (int i = 0; i < n; i++) {
+            counter[ss[i] - 'a']++;
+        }
+        boolean fullValid = true;
+        for (int i = 0; i < 26; i++) {
+            if (counter[i] > 0 && counter[i] < k) {
+                valid[i] = false;
+                fullValid = false;
+            } else {
+                valid[i] = true;
+            }
+        }
+        if (fullValid) {
+            return s.length();
+        }
+        int max = 0;
+        int lastStart = 0;
+        for (int i = 0; i <= n; i++) {
+            if (i == n || !valid[ss[i] - 'a']) {
+                max = Math.max(max, longestSubstring(s.substring(lastStart, i), k));
+                lastStart = i + 1;
+            }
+        }
+        return max;
     }
 
     /**
@@ -1408,8 +1449,32 @@ public class Solution300 {
         }
     }
 
+    public String solution(long[] arr) {
+        // Type your solution here
+        if (arr.length == 0)
+            return "";
+        long left = 0, right = 0;
+        for (int i = 1; i < arr.length; i++) {
+            if (arr[i] == -1)
+                continue;
+            int j = i; // ! don't change i
+            while (j > 2) {
+                j = (j - 1) / 2;
+            }
+            if (j == 1) {
+                left += arr[i];
+            } else {
+                right += arr[i];
+            }
+        }
+        if (left == right)
+            return "";
+        return left > right ? "Left" : "Right";
+    }
+
     @Test
     public void test0() {
+        solution(new long[] { 3, 6, 2, 9, -1, 10 });
         countSmaller(new int[] { 5, 2, 6, 1 });
         System.out.println(maxNumber(new int[] { 3, 4, 6, 5 }, new int[] { 9, 1, 2, 5, 8, 3 }, 5));
         Solution399V2 s = new Solution399V2();
@@ -1419,7 +1484,7 @@ public class Solution300 {
         largestDigits(A, 3);
     }
 
-    @Test
+    // @Test
     public void test() {
         minPatches(new int[] { 1, 5, 10 }, 20);
     }
