@@ -395,6 +395,20 @@ public class Solution100 {
      * 
      * @see 81
      */
+
+    public int findMin153(int[] nums) {
+        int left = 0, right = nums.length - 1;
+        while (left < right) {
+            int mid = left + (right - left) / 2;
+            if (nums[mid] < nums[right]) { // right side sorted, and all are greater than nums[mid]
+                right = mid;
+            } else { // left side sorted, and all are greater than nums[right]
+                left = mid + 1;
+            }
+        }
+        return nums[left];
+    }
+
     public int findMin(int[] nums) {
         int left = 0, right = nums.length - 1;
         while (left < right) {

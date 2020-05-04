@@ -27,7 +27,7 @@ public class Solution000 {
             // start = A[c];
             // }
             res = Math.max(res, i - start + 1);
-            // !-> (last index of char) + 1, so start=2 when i=3
+            // !-> (last index of char) + 1, so start=2 when i=3 in the example
             index[s.charAt(i)] = i + 1;
         }
         return res;
@@ -840,7 +840,8 @@ public class Solution000 {
         List<Integer> first = new ArrayList<>();
         first.add(num[0]);
         res.add(first);
-        // newRes: add one number to every position of every list {{1}} -> {{1, 2}, {2, 1}}
+        // newRes: add one number to every position of every list {{1}} -> {{1, 2}, {2,
+        // 1}}
         // -> {{3, 1, 2}, {1, 3, 2}, {1, 2, 3}, ...}
         for (int i = 1; i < num.length; i++) {
             List<List<Integer>> newRes = new ArrayList<>();
@@ -918,9 +919,31 @@ public class Solution000 {
     }
 
     /**
+     * 75. Sort Colors Input: [2,0,2,1,1,0], Output: [0,0,1,1,2,2]
+     */
+    public void sortColors(int[] nums) {
+        int r = 0, b = nums.length - 1, cur = 0;
+        while (cur <= b) {
+            if (nums[cur] == 0)
+                swap(nums, r++, cur++);
+            else if (nums[cur] == 2)
+                swap(nums, b--, cur);
+            else
+                cur++;
+        }
+    }
+
+    private void swap(int[] nums, int a, int b) {
+        int tmp = nums[a];
+        nums[a] = nums[b];
+        nums[b] = tmp;
+    }
+
+    /**
      * 77. Combinations
      */
-    // Given two integers n and k, return all possible combinations of k numbers out of 1 ... n.
+    // Given two integers n and k, return all possible combinations of k numbers out
+    // of 1 ... n.
     public List<List<Integer>> combine(int n, int k) {
         List<List<Integer>> res = new ArrayList<>();
         fn77(1, k, n, new ArrayList<>(), res);
@@ -1064,7 +1087,7 @@ public class Solution000 {
         if (s == null || s.isEmpty() || s.charAt(0) == '0') {
             return 0;
         }
-        int a = 1, b = 1, cur = 1;
+        int a = 1, b = 1, cur;
         for (int i = 1; i < s.length(); i++) {
             if (s.charAt(i) == '0') {
                 if (s.charAt(i - 1) != '1' && s.charAt(i - 1) != '2') {

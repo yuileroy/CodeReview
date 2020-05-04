@@ -178,8 +178,39 @@ public class CompileCode {
         }
     }
 
+    public void sortOddEven(int[] A) {
+        // [1, 3, 5, 2, 4, 6]
+        int odd = 0, even = 1;
+        while (odd < A.length && even < A.length) {
+            while (odd < A.length && A[odd] % 2 != 0) {
+                odd += 2;
+            }
+            while (even < A.length && A[even] % 2 == 0) {
+                even += 2;
+            }
+            System.out.println(odd + "-" + even);
+            if (odd < A.length && even < A.length) {
+                swap(A, odd, even);
+                odd += 2;
+                even += 2;
+            }
+        }
+    }
+
+    private void swap(int[] A, int a, int b) {
+        int tmp = A[a];
+        A[a] = A[b];
+        A[b] = tmp;
+    }
+
     @Test
     public void test() {
+
+        int[] A = { 2, 3, 5, 1, 4, 6, 8, 1 };
+        sortOddEven(A);
+        for (int i = 0; i < A.length; i++) {
+            System.out.print(A[i]);
+        }
 
         System.out.println(perfectSub("1102021222", 2));
         // System.out.println(convert("15-million-1-hundred-15-thousand-20-1"));
