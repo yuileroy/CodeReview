@@ -11,8 +11,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
 
@@ -227,16 +225,16 @@ public class Solution200 {
 
         PriorityQueue<Integer> pq = new PriorityQueue<Integer>((a, b) -> b - a);
         pq.add(0);
-        int prev = 0;
+        int prev = 0; // to compare with peek() after each step
         for (int[] h : hList) {
+            // 1. in add, out remove
             if (h[1] < 0) {
                 pq.add(-h[1]);
             } else {
                 pq.remove(h[1]);
             }
+            // 2. if the highest height peek() changed, it's an edge
             int cur = pq.peek();
-            // the current building removed, if the highest height is not
-            // changed, then it's covered by other building.
             if (cur != prev) {
                 res.add(Arrays.asList(h[0], cur));
                 prev = cur;
@@ -356,7 +354,7 @@ public class Solution200 {
         if (root == null) {
             return 0;
         }
-        // ** optional speed up START
+        // **speed up START
         TreeNode left = root, right = root;
         int height = 0;
         while (right != null) {
@@ -367,7 +365,7 @@ public class Solution200 {
         if (left == null) {
             return (1 << height) - 1;
         }
-        // ** optional speed up END
+        // **speed up END
         // one side will be full tree
         return 1 + countNodes(root.left) + countNodes(root.right);
     }
@@ -376,13 +374,14 @@ public class Solution200 {
      * 224. Basic Calculator
      */
     public int calculate(String s) {
-        int sign = 1, cur = 0;
+        int cur = 0, sign = 1; // init
         Stack<Integer> stack = new Stack<>();
         for (int i = 0; i < s.length(); i++) {
             if (Character.isDigit(s.charAt(i))) {
                 int val = 0;
                 while (i < s.length() && Character.isDigit(s.charAt(i))) {
-                    val = val * 10 + s.charAt(i++) - '0';
+                    val = val * 10 + s.charAt(i) - '0';
+                    i++;
                 }
                 i--;
                 cur += val * sign;
@@ -393,6 +392,7 @@ public class Solution200 {
             } else if (s.charAt(i) == '(') {
                 stack.push(cur);
                 stack.push(sign);
+                // init
                 cur = 0;
                 sign = 1;
             } else if (s.charAt(i) == ')') {
@@ -506,6 +506,8 @@ public class Solution200 {
     /**
      * Find distance between two nodes of a Binary Tree (236)
      */
+    int find = 0;
+
     public int lowest(TreeNode root, TreeNode p, TreeNode q) {
         if (root == null) {
             return -1;
@@ -513,6 +515,7 @@ public class Solution200 {
         int leftN = lowest(root.left, p, q);
         int rightN = lowest(root.right, p, q);
         if (root == p || root == q) {
+            find++;
             return leftN == -1 ? rightN + 1 : leftN + 1;
         }
         if (leftN != -1 && rightN != -1) {
@@ -520,9 +523,9 @@ public class Solution200 {
         } else if (leftN == -1 && rightN == -1) {
             return -1;
         } else if (leftN != -1) {
-            return leftN + 1;
+            return find == 2 ? leftN : leftN + 1;
         } else {
-            return rightN + 1;
+            return find == 2 ? rightN : rightN + 1;
         }
     }
 
@@ -543,6 +546,7 @@ public class Solution200 {
             addNext(que, nums[i + k - 1]);
             res[i] = que.peekFirst();
             if (nums[i] == res[i]) {
+                // otherwise is removed already
                 que.removeFirst();
             }
         }
@@ -673,14 +677,18 @@ public class Solution200 {
         }
 
         void build(int start, int n, List<Integer> item, List<List<Integer>> res) {
+            // if (n == 1) {
+            // res.add(new ArrayList<>(item));
+            // return;
+            // }
             for (int i = start; i <= n / i; i++) {
                 if (n % i == 0) {
+                    List<Integer> tmp = new ArrayList<>(item);
+                    tmp.add(i);
+                    tmp.add(n / i);
+                    res.add(new ArrayList<>(tmp));
                     item.add(i);
-                    // -> add the pair and save an item
-                    item.add(n / i);
-                    res.add(new ArrayList<>(item));
-                    item.remove(item.size() - 1);
-                    // <-
+                    // build(start, n / i, item, res);
                     build(i, n / i, item, res);
                     item.remove(item.size() - 1);
                 }
@@ -711,14 +719,16 @@ public class Solution200 {
     // 2. stack, pop() is inorder
     // 3. recursive, inefficient
     public boolean verifyPreorder(int[] preorder) {
-        int low = Integer.MIN_VALUE, i = -1;
-        for (int p : preorder) {
-            if (p < low)
+        int inorder = Integer.MIN_VALUE, end = -1;
+        // index 0 to end, act as a stack
+        for (int val : preorder) {
+            if (val < inorder) {
                 return false;
-            while (i > -1 && p > preorder[i]) {
-                low = preorder[i--];
             }
-            preorder[++i] = p;
+            while (end > -1 && val > preorder[end]) {
+                inorder = preorder[end--];
+            }
+            preorder[++end] = val;
         }
         return true;
     }
@@ -729,10 +739,12 @@ public class Solution200 {
         int inorder = Integer.MIN_VALUE;
 
         for (int v : preorder) {
-            if (v < inorder)
+            if (v < inorder) {
                 return false;
-            while (!stack.isEmpty() && v > stack.peek())
+            }
+            while (!stack.isEmpty() && v > stack.peek()) {
                 inorder = stack.pop();
+            }
             stack.push(v);
         }
         return true;
@@ -776,56 +788,55 @@ public class Solution200 {
 
     public String alienOrder(String[] words) {
         @SuppressWarnings("unchecked")
-        Set<Integer>[] adj = new HashSet[26];
+        HashSet<Integer>[] adj = new HashSet[26];
+        // Arrays.fill(adj, new HashSet<>()); // it's shared
         for (int i = 0; i < 26; i++) {
             adj[i] = new HashSet<>();
         }
         int[] degree = new int[26];
         Arrays.fill(degree, -1);
-
         for (int i = 0; i < words.length; i++) {
             for (char c : words[i].toCharArray()) {
-                if (degree[c - 'a'] < 0) {
+                if (degree[c - 'a'] < 0) { // missed, degree[c2]++ may duplicate
                     degree[c - 'a'] = 0;
                 }
             }
-            if (i > 0) {
-                String w1 = words[i - 1], w2 = words[i];
-                int len = Math.min(w1.length(), w2.length());
-                for (int j = 0; j < len; j++) {
-                    int c1 = w1.charAt(j) - 'a', c2 = w2.charAt(j) - 'a';
-                    if (c1 != c2) {
-                        if (!adj[c1].contains(c2)) {
-                            adj[c1].add(c2);
-                            degree[c2]++;
-                        }
-                        break;
+            if (i == 0) {
+                continue;
+            }
+            String w1 = words[i - 1], w2 = words[i];
+            for (int j = 0; j < w1.length() && j < w2.length(); j++) {
+                int c1 = w1.charAt(j) - 'a', c2 = w2.charAt(j) - 'a';
+                if (c1 != c2) {
+                    if (!adj[c1].contains(c2)) { // missed
+                        adj[c1].add(c2);
+                        degree[c2]++;
                     }
-                    // "abcd"->"ab"
-                    if (j == w2.length() - 1 && w1.length() > w2.length()) {
-                        return "";
-                    }
+                    break;
+                }
+                // "abc" -> "ab"
+                if (j == w2.length() - 1 && w1.length() > w2.length()) {
+                    return "";
                 }
             }
         }
-
-        Queue<Integer> q = new ArrayDeque<>();
+        ArrayDeque<Integer> que = new ArrayDeque<>();
         for (int i = 0; i < degree.length; i++) {
             if (degree[i] == 0) {
-                q.add(i);
+                que.add(i);
             }
         }
         StringBuilder sb = new StringBuilder();
-        while (!q.isEmpty()) {
-            int i = q.remove();
-            sb.append((char) ('a' + i));
-            for (int j : adj[i]) {
-                degree[j]--;
-                if (degree[j] == 0) {
-                    q.add(j);
+        while (!que.isEmpty()) {
+            int u = que.remove();
+            sb.append((char) ('a' + u));
+            for (int v : adj[u]) {
+                if (--degree[v] == 0) {
+                    que.add(v);
                 }
             }
         }
+        // need to check every degree, not que.isEmpty()
         for (int d : degree) {
             if (d > 0) {
                 return "";
@@ -839,28 +850,26 @@ public class Solution200 {
      */
     public List<Integer> closestKValues(TreeNode root, double target, int k) {
         List<Integer> res = new LinkedList<>();
-        boolean[] found = new boolean[1];
-        helper(root, target, k, res, found);
+        helper(root, target, k, res);
         return res;
     }
 
-    private void helper(TreeNode root, double target, int k, List<Integer> res, boolean[] found) {
-        if (root == null || found[0]) {
+    private void helper(TreeNode root, double target, int k, List<Integer> res) {
+        if (root == null) {
             return;
         }
-        helper(root.left, target, k, res, found);
+        helper(root.left, target, k, res);
         if (res.size() == k) {
             if (Math.abs(root.val - target) < Math.abs(res.get(0) - target)) {
                 res.remove(0);
                 res.add(root.val);
             } else {
-                found[0] = true;
                 return;
             }
         } else {
             res.add(root.val);
         }
-        helper(root.right, target, k, res, found);
+        helper(root.right, target, k, res);
     }
 
     /**
@@ -943,12 +952,25 @@ public class Solution200 {
      * 285. Inorder Successor in BST
      */
     public TreeNode inorderSuccessor(TreeNode root, TreeNode p) {
-        TreeNode res = null, cur = root;
+        TreeNode cur = root, res = null;
         while (cur != null) {
-            if (cur.val <= p.val) {
+            if (cur.val > p.val) {
+                res = cur;
+                cur = cur.left;
+            } else {
+                cur = cur.right;
+            }
+        }
+        return res;
+    }
+
+    public TreeNode inorderPre(TreeNode root, TreeNode p) {
+        TreeNode cur = root, res = null;
+        while (cur != null) {
+            if (cur.val < p.val) {
+                res = cur;
                 cur = cur.right;
             } else {
-                res = cur;
                 cur = cur.left;
             }
         }
