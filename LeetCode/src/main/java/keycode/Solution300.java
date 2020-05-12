@@ -62,47 +62,49 @@ public class Solution300 {
     // islands after each addLand operation.
     public List<Integer> numIslands2(int m, int n, int[][] positions) {
 
-        int[][] B = { { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 } };
-        int[] U = new int[m * n];
+        int[][] dir = { { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 } };
+        int[] A = new int[m * n];
         // for (int i = 0; i < U.length; i++) U[i] = i;
         // set U[i] = i to indicate it's an island, -1 as water
-        Arrays.fill(U, -1);
+        Arrays.fill(A, -1);
         List<Integer> res = new ArrayList<>();
         int cnt = 0;
 
         for (int[] e : positions) {
             int idx = e[0] * n + e[1];
-            if (U[idx] != -1) {
+            if (A[idx] != -1) {
+                // already an island, skip
                 res.add(cnt);
                 continue;
             }
-            U[idx] = idx;
+            A[idx] = idx;
             cnt++;
-            for (int[] b : B) {
+            for (int[] b : dir) {
                 int nx = e[0] + b[0];
                 int ny = e[1] + b[1];
                 int idx2 = nx * n + ny;
-                if (nx < 0 || nx >= m || ny < 0 || ny >= n || U[idx2] == -1) {
+                if (nx < 0 || nx >= m || ny < 0 || ny >= n || A[idx2] == -1) {
                     continue;
                 }
                 // union
-                int v1 = find(U, idx);
-                int v2 = find(U, idx2);
-                U[v1] = v2;
-                if (v1 != v2)
+                int v1 = find(A, idx);
+                int v2 = find(A, idx2);
+                A[v1] = v2;
+                if (v1 != v2) {
                     cnt--;
+                }
             }
             res.add(cnt);
         }
         return res;
     }
 
-    private int find(int[] U, int i) {
-        if (U[i] == i) {
+    private int find(int[] A, int i) {
+        if (A[i] == i) {
             return i;
         }
-        U[i] = find(U, U[i]);
-        return U[i];
+        A[i] = find(A, A[i]);
+        return A[i];
     }
 
     /**
@@ -227,8 +229,7 @@ public class Solution300 {
             while (size-- > 0) {
                 int cur = queue.remove();
                 for (int next : graph[cur]) {
-                    degree[next]--;
-                    if (degree[next] == 1) {
+                    if (--degree[next] == 1) {
                         queue.add(next);
                     }
                 }
@@ -368,7 +369,6 @@ public class Solution300 {
 
     int insertTree(Node root, int value) {
         if (root == null) {
-            root = new Node(value);
             return 0;
         }
         if (root.val == value) {
@@ -465,16 +465,16 @@ public class Solution300 {
             return;
         }
         for (int i = start; i < word.length(); i++) {
+            if (i == start) {
+                // w + dfs
+                dfs(i + 1, item + word.charAt(i), word, res);
+            }
             String item1 = item + (i - start + 1);
             if (i < word.length() - 1) {
                 item1 += word.charAt(i + 1);
             }
             // 1o + dfs, 2r + dfs, 3d + dfs, 4
             dfs(i + 2, item1, word, res);
-            if (i == start) {
-                // w + dfs
-                dfs(i + 1, item + word.charAt(i), word, res);
-            }
         }
     }
 
@@ -536,6 +536,7 @@ public class Solution300 {
     /**
      * 330. Patching Array
      */
+    // [1 5 10], 20
     public int minPatches(int[] nums, int n) {
         long miss = 1;
         int i = 0, res = 0;
@@ -548,6 +549,12 @@ public class Solution300 {
                 res++;
             }
         }
+        // miss = 1, i = 0, res = 0;
+        // miss = 2, i = 1, res = 0;
+        // miss = 4, i = 1, res = 1;
+        // miss = 8, i = 1, res = 2;
+        // miss = 13, i = 2; res = 2;
+        // miss = 23, i = 3
         return res;
     }
 
@@ -574,6 +581,7 @@ public class Solution300 {
         }
 
         // [A, B] [A, C] [C, A]
+        // res = [B], [C, B], [A, C, B]
         private void dfs(String cur) {
             // use while, run again means previous run didn't traverse every flight
             while (map.containsKey(cur) && !map.get(cur).isEmpty()) {
@@ -800,8 +808,11 @@ public class Solution300 {
                     right = mid;
                 }
             }
+
             // all height before left is less than envelope[1]
             // decrease A[left] if exists, or it is added
+            // [5,6],[6,7],[6,3],[7,4],[8,5] -> after 3rd run, A=[3, 7], cnt=2
+            // [5,6] -> [5,6],[6,7]
             A[left] = envelope[1];
             if (left == cnt) {
                 // height > last one's, insert at idx left
@@ -1011,6 +1022,7 @@ public class Solution300 {
     /**
      * 370. Range Addition
      */
+    // [startIndex, endIndex, inc]
     // Input: length = 5, updates = [[1,3,2],[2,4,3],[0,2,-2]]
     // Output: [-2,0,3,5,3]
     public int[] getModifiedArray(int length, int[][] updates) {
@@ -1024,9 +1036,9 @@ public class Solution300 {
         }
         int diff = 0;
         for (int i = 0; i < length; i++) {
-            int tmp = diff;
+            int cur = diff;
             diff += A[i];
-            A[i] += tmp;
+            A[i] += cur;
         }
         return A;
     }
@@ -1204,16 +1216,16 @@ public class Solution300 {
         return res;
     }
 
-    void dfs(List<Integer> res, int cur, int n) {
-        if (cur > n) {
+    void dfs(List<Integer> res, int i, int n) {
+        if (i > n) {
             return;
         }
-        res.add(cur);
-        for (int i = 0; i <= 9; i++) {
-            if (cur * 10 + i > n) {
+        res.add(i);
+        for (int j = 0; j <= 9; j++) {
+            if (i * 10 + j > n) {
                 break;
             }
-            dfs(res, cur * 10 + i, n);
+            dfs(res, i * 10 + j, n);
         }
     }
 
@@ -1266,7 +1278,7 @@ public class Solution300 {
     public String decodeString(String s) {
         Stack<Integer> cntStack = new Stack<>();
         Stack<String> stack = new Stack<>();
-        String cur = "";
+        String res = "";
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             if (Character.isDigit(c)) {
@@ -1276,16 +1288,16 @@ public class Solution300 {
                 }
                 int val = Integer.parseInt(s.substring(start, i + 1));
                 cntStack.push(val);
-                stack.push(cur);
+                stack.push(res);
             } else if (c == '[') {
-                cur = "";
+                res = "";
             } else if (c == ']') {
-                cur = stack.pop() + dup(cntStack.pop(), cur);
+                res = stack.pop() + dup(cntStack.pop(), res);
             } else {
-                cur += c;
+                res += c;
             }
         }
-        return cur;
+        return res;
     }
 
     private String dup(int val, String s) {
@@ -1298,6 +1310,8 @@ public class Solution300 {
 
     /**
      * 395. Longest Substring with At Least K Repeating Characters
+     * 
+     * every character in T appears no less than k times.
      */
     public int longestSubstring(String s, int k) {
         if (s == null || s.isEmpty()) {
@@ -1326,12 +1340,11 @@ public class Solution300 {
         if (fullValid) {
             return s.length();
         }
-        int max = 0;
-        int lastStart = 0;
+        int max = 0, start = 0;
         for (int i = 0; i <= n; i++) {
             if (i == n || !valid[ss[i] - 'a']) {
-                max = Math.max(max, longestSubstring(s.substring(lastStart, i), k));
-                lastStart = i + 1;
+                max = Math.max(max, longestSubstring(s.substring(start, i), k));
+                start = i + 1;
             }
         }
         return max;

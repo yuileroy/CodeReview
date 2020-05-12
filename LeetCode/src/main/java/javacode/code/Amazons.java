@@ -430,9 +430,20 @@ public class Amazons {
         return matrix;
     }
 
+    List<String> fnword(String helpText, List<String> ext) {
+        String[] words = helpText.toLowerCase().split("[\\d||\\W]+");
+        if (words.length == 0) {
+            return null;
+        }
+        return null;
+    }
+
     @Test
     public void test2() {
 
+        String[] words = " yd6uy.2c5".split("[\\d||\\W]+");
+        String[] words2 = " ydf6uy.2c5".split("[^a-z]+");
+        words.equals(words2);
         Solution1268 sol = new Solution1268();
         // sol.suggestedProducts(new String[] { "mobile", "mouse", "moneypot",
         // "monitor", "mousepad" }, "m");
