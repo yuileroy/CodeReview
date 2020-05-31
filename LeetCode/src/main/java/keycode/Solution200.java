@@ -873,39 +873,6 @@ public class Solution200 {
     }
 
     /**
-     * 275. H-Index II
-     */
-
-    public int hIndex(int[] citations) {
-        if (citations.length == 0) {
-            return 0;
-        }
-        for (int k = citations.length; k > 0; k--) {
-            if (k <= citations[citations.length - k]) {
-                return k;
-            }
-        }
-        return 0;
-    }
-
-    // V2, BST find last valid
-    public int hIndexV2(int[] citations) {
-        if (citations.length == 0) {
-            return 0;
-        }
-        int l = 1, r = citations.length; // k's range, not citations's
-        while (l < r) {
-            int k = l + (r - l) / 2;
-            if (k <= citations[citations.length - k]) {
-                l = k + 1;
-            } else {
-                r = k;
-            }
-        }
-        return l <= citations[citations.length - l] ? l : l - 1;
-    }
-
-    /**
      * 282. Expression Add Operators
      */
     public List<String> addOperators(String num, int target) {

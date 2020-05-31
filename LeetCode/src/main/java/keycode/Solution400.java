@@ -1,14 +1,20 @@
 package keycode;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
 import org.junit.Test;
+
+import keycode.util.TreeNode;
 
 public class Solution400 {
 
@@ -22,17 +28,17 @@ public class Solution400 {
             return "0";
         }
         k = num.length() - k;
-        ArrayDeque<Character> qu = new ArrayDeque<>();
+        ArrayDeque<Character> que = new ArrayDeque<>();
         for (int i = 0; i < num.length(); i++) {
             // also check total count of available char before delete
-            while (qu.size() > 0 && qu.peekLast() > num.charAt(i) && qu.size() + num.length() - i > k) {
-                qu.removeLast();
+            while (que.size() > 0 && que.peekLast() > num.charAt(i) && que.size() + num.length() - i > k) {
+                que.removeLast();
             }
-            qu.add(num.charAt(i));
+            que.add(num.charAt(i));
         }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < k; i++) {
-            sb.append(qu.removeFirst());
+            sb.append(que.remove());
         }
         while (sb.length() > 0 && sb.charAt(0) == '0') {
             sb.deleteCharAt(0);
@@ -40,41 +46,76 @@ public class Solution400 {
         return sb.length() == 0 ? "0" : sb.toString();
     }
 
+    /**
+     * 403. Frog Jump
+     * 
+     * If the frog's last jump was k units, then its next jump must be either k - 1, k, or k + 1 units. Note that the
+     * frog can only jump in the forward direction.
+     */
     public boolean canCross(int[] stones) {
-        for (int i = 3; i < stones.length; i++) {
-            if (stones[i] > stones[i - 1] * 2) {
-                return false;
-            }
-        }
         Set<Integer> set = new HashSet<>();
         for (int s : stones) {
             set.add(s);
         }
-        Stack<Integer> position = new Stack<>();
-        Stack<Integer> jump = new Stack<>();
-        position.add(0);
-        jump.add(0);
+        Stack<int[]> position = new Stack<>();
+        position.push(new int[] { 0, 0 });
 
         while (!position.isEmpty()) {
-            int pos = position.pop();
-            int j = jump.pop();
+            int[] e = position.pop();
 
-            for (int i = j - 1; i <= j + 1; i++) {
-                if (i <= 0) {
+            for (int move = e[1] - 1; move <= e[1] + 1; move++) {
+                if (move <= 0) {
                     continue;
                 }
-                int nextPos = pos + i;
-                if (nextPos == stones[stones.length - 1]) {
+                int idx = e[0] + move;
+                if (idx == stones[stones.length - 1]) {
                     return true;
                 }
-                if (set.contains(nextPos)) {
-                    position.push(nextPos);
-                    jump.push(i);
+                if (set.contains(idx)) {
+                    position.push(new int[] { idx, move });
                 }
             }
 
         }
         return false;
+    }
+
+    public boolean canCrossV2(int[] stones) {
+        if (stones[1] != 1) {
+            return false;
+        }
+        for (int i = 3; i < stones.length; i++) {
+            if (stones[i] > stones[i - 1] * 2)
+                return false;
+        }
+        Map<Integer, Integer> map = new HashMap<>();
+        List<Set<Integer>> list = new ArrayList<>(stones.length);
+        for (int i = 0; i < stones.length; i++) {
+            map.put(stones[i], i);
+            list.add(new HashSet<Integer>());
+        }
+        list.get(1).add(1);
+        for (int i = 1; i < stones.length; i++) {
+            Set<Integer> nextPosition = new HashSet<>();
+            for (int preJump : list.get(i)) {
+                nextPosition.add(stones[i] + preJump);
+                if (preJump > 1) {
+                    nextPosition.add(stones[i] + preJump - 1);
+                }
+                nextPosition.add(stones[i] + preJump + 1);
+            }
+            // end early
+            if (nextPosition.contains(stones[stones.length - 1])) {
+                return true;
+            }
+            for (int pos : nextPosition) {
+                if (map.containsKey(pos)) {
+                    list.get(map.get(pos)).add(pos - stones[i]);
+                }
+            }
+        }
+
+        return !list.get(stones.length - 1).isEmpty();
     }
 
     /**
@@ -105,7 +146,7 @@ public class Solution400 {
     /**
      * 410. Split Array Largest Sum
      * 
-     * to minimize the largest sum among these m subarrays.
+     * split the array into m non-empty continuous subarrays to minimize the largest sum among these
      */
     public int splitArray(int[] nums, int m) {
         int total = 0;
@@ -121,7 +162,7 @@ public class Solution400 {
         int start = max, end = total;
         while (start < end) {
             int mid = (end - start) / 2 + start;
-            if (!countCopyFit(nums, mid, m)) {
+            if (!countFit(nums, mid, m)) {
                 start = mid + 1;
             } else {
                 end = mid;
@@ -130,7 +171,7 @@ public class Solution400 {
         return start;
     }
 
-    boolean countCopyFit(int[] nums, int minSum, int m) {
+    private boolean countFit(int[] nums, int minSum, int m) {
         int sum = 0, count = 1;
         // count number of copies under this minSum limit
         for (int i = 0; i < nums.length; i++) {
@@ -299,6 +340,33 @@ public class Solution400 {
             }
         }
         return ans;
+    }
+
+    /**
+     * 450. Delete Node in a BST
+     */
+    public TreeNode deleteNode(TreeNode root, int key) {
+        if (root == null) {
+            return null;
+        }
+        if (key < root.val) {
+            root.left = deleteNode(root.left, key);
+        } else if (key > root.val) {
+            root.right = deleteNode(root.right, key);
+        } else {
+            if (root.left == null) {
+                return root.right;
+            } else if (root.right == null) {
+                return root.left;
+            }
+            TreeNode tmp = root.right;
+            while (tmp.left != null) {
+                tmp = tmp.left;
+            }
+            tmp.left = root.left;
+            return root.right;
+        }
+        return root;
     }
 
     @Test

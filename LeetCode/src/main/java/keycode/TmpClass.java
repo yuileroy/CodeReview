@@ -2,6 +2,9 @@ package keycode;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.PriorityQueue;
+
+import org.junit.Test;
 
 public class TmpClass {
 
@@ -100,5 +103,25 @@ public class TmpClass {
         }
         res += cur;
         return res;
+    }
+
+    void sortPQ() {
+        Map<String, Integer> map = new HashMap<>();
+        PriorityQueue<String> pq = new PriorityQueue<>((a, b) -> map.get(a) - map.get(b));
+        map.put("a", 7);
+        map.put("b", 6);
+        map.put("c", 4);
+        pq.add("a");
+        pq.add("b");
+        pq.add("c");
+        pq.remove("c");
+        map.put("c", 7);
+        pq.add("c");
+        System.out.println(pq.remove());
+    }
+
+    @Test
+    public void test() {
+        sortPQ();
     }
 }

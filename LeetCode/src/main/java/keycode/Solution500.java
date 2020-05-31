@@ -1,6 +1,5 @@
 package keycode;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -8,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Stack;
 
 import org.junit.Test;
 
@@ -86,36 +84,6 @@ public class Solution500 {
         points[r] = tmp;
     }
 
-    public boolean isBipartite(int[][] graph) {
-        boolean[] visited = new boolean[graph.length];
-        boolean[] color = new boolean[graph.length];
-
-        ArrayDeque<Integer> queue = new ArrayDeque<>();
-        for (int i = 0; i < graph.length; i++) {
-            if (graph[i].length == 0 || visited[i]) {
-                continue;
-            }
-            queue.add(i);
-            visited[i] = true;
-            color[i] = true;
-            while (!queue.isEmpty()) {
-                int u = queue.remove();
-                for (int v : graph[u]) {
-                    if (visited[v]) {
-                        if (color[v] == color[u]) {
-                            return false;
-                        }
-                    } else {
-                        queue.add(v);
-                        visited[v] = true;
-                        color[v] = !color[u];
-                    }
-                }
-            }
-        }
-        return true;
-    }
-
     /**
      * 632. Smallest Range Covering Elements from K Lists
      */
@@ -149,68 +117,6 @@ public class Solution500 {
             e[2] = nums.get(e[0]).get(e[1]);
             pq.add(e);
             right = Math.max(right, e[2]);
-        }
-        return res;
-    }
-
-    /**
-     * 772. Basic Calculator III
-     */
-    public int calculate(String s) {
-        if (s == null || s.length() == 0) {
-            return 0;
-        }
-        Stack<Integer> stack = new Stack<>();
-        char sign = '+';
-        int num = 0;
-        int n = s.length();
-        for (int i = 0; i < n; i++) {
-            char c = s.charAt(i);
-            // both digit and '(' will do nothing but set num
-            if (Character.isDigit(c)) {
-                while (i < s.length() && Character.isDigit(s.charAt(i))) {
-                    num = num * 10 + s.charAt(i++) - '0';
-                }
-                i--;
-            } else if (c == '(') {
-                int j = i + 1;
-                int braces = 1;
-                while (j < n) {
-                    if (s.charAt(j) == '(')
-                        braces++;
-                    if (s.charAt(j) == ')')
-                        braces--;
-                    if (braces == 0)
-                        break;
-                    j++;
-                }
-                num = calculate(s.substring(i + 1, j));
-                i = j;
-            }
-            // finish calulation of num with previous sign, reset num and sign
-            if (c == '+' || c == '-' || c == '*' || c == '/' || i == n - 1) {
-                switch (sign) {
-                case '+':
-                    stack.push(num);
-                    break;
-                case '-':
-                    stack.push(-num);
-                    break;
-                case '*':
-                    stack.push(stack.pop() * num);
-                    break;
-                case '/':
-                    stack.push(stack.pop() / num);
-                    break;
-                }
-                num = 0;
-                sign = c;
-            }
-        }
-
-        int res = 0;
-        while (!stack.isEmpty()) {
-            res += stack.pop();
         }
         return res;
     }
@@ -311,11 +217,11 @@ public class Solution500 {
         }
     }
 
-
-
     @Test
     public void test() {
-
+        String a = "ab";
+        String b = "a" + "b";
+        System.out.println(a == b);
         System.out.println(find(new int[] { 2, 1, 0, 1 }));
 
         int[] nums = { 3, -4, 4 };
